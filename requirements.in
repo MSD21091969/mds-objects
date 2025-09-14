@@ -2,3 +2,7 @@ fastapi
 uvicorn[standard]
 google-generativeai
 pip-tools
+google-cloud-firestore
+firebase-admin
+redis
+jinja2
