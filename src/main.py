@@ -2,10 +2,20 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 
-# Importeer de benodigde componenten uit de security module en modellen
 from src.core.security import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from src.core.models.user import Token, User
+from src.core.models.user import Token
 from src.components.casefile_management.api import router as casefile_router
+from src.components.communication.api import router as chat_router # NIEUW
+from src.core.dependencies import get_database_manager
+from src.core.managers.database_manager import DatabaseManager
+from src.core.logging_config import setup_logging # NEW
+from src.core.adk_monitoring.telemetry_setup import setup_opentelemetry # NEW
+
+# Setup basic logging as early as possible
+setup_logging() # NEW
+
+# Setup OpenTelemetry
+setup_opentelemetry() # NEW
 
 app = FastAPI(
     title="MDS7 Rebuild API",
@@ -15,8 +25,11 @@ app = FastAPI(
 
 # --- Authenticatie Endpoint ---
 @app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(form_data.username, form_data.password)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db_manager: DatabaseManager = Depends(get_database_manager)
+):
+    user = await authenticate_user(db_manager, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -33,6 +46,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 # --- API Routers ---
 app.include_router(casefile_router, prefix="/api/v1", tags=["Casefile Management"])
+app.include_router(chat_router, prefix="/api/v1", tags=["Communication"]) # NIEUW
 
 
 # --- Root Endpoint ---
