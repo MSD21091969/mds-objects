@@ -1,10 +1,9 @@
-# src/core/managers/database_manager.py
-
 import logging
 import firebase_admin
 from firebase_admin import credentials, firestore
 from typing import Any, List, Optional
 import asyncio
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +23,14 @@ class DatabaseManager:
         """
         try:
             if not firebase_admin._apps:
+                os.environ['GOOGLE_CLOUD_PROJECT'] = 'mailmind-ai-djbuw'
+                os.environ['GOOGLE_CLOUD_LOCATION'] = 'europe-west4'
+                os.environ['GOOGLE_GENAI_USE_VERTEXAI'] = 'TRUE'
                 cred = credentials.ApplicationDefault()
                 firebase_admin.initialize_app(cred)
                 logger.info("Firebase Admin SDK initialized successfully.")
             
-            self._db = firestore.client()
+            self._db = firestore.client(database_id='mds-objects')
             logger.info("Successfully connected to Firestore.")
         except Exception as e:
             logger.critical(f"Failed to connect to Firestore: {e}", exc_info=True)
