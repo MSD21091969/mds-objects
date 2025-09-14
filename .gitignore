@@ -12,3 +12,10 @@ __pycache__/
 
 # Gedeelde of gevoelige mappen
 shared/
+
+# Temporary/Scratchpad files (added by Gemini CLI)
+basetool.txt
+llms-full.txt
+remarks.txt
+swagger UI APIs.txt
+unicorn.txt
