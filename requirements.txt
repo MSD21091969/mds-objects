@@ -42,6 +42,8 @@ fastapi==0.116.1
     # via -r requirements.in
 firebase-admin==7.1.0
     # via -r requirements.in
+google-adk==0.0.1
+    # via -r requirements.in
 google-ai-generativelanguage==0.6.15
     # via google-generativeai
 google-api-core[grpc]==2.25.1
