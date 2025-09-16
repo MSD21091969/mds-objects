@@ -34,7 +34,7 @@ class SanitizationPlugin(BasePlugin):
                     "user_id": session.user_id,
                     "alert": "Sensitive data pattern detected in agent output.",
                 }
-                self.monitoring_service.log_event("security_alert", log_data)
+                await self.monitoring_service.log_event("security_alert", log_data)
                 logger.warning(f"Sensitive data pattern detected in agent output for session {session.id}.")
 
         # Check for prompt injection attempts in user input
@@ -45,5 +45,5 @@ class SanitizationPlugin(BasePlugin):
                     "user_id": session.user_id,
                     "alert": "Potential prompt injection attempt detected in user input.",
                 }
-                self.monitoring_service.log_event("security_alert", log_data)
+                await self.monitoring_service.log_event("security_alert", log_data)
                 logger.warning(f"Potential prompt injection attempt detected in user input for session {session.id}.")
