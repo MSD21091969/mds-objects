@@ -16,6 +16,7 @@ from src.plugins.opentelemetry_plugin import OpenTelemetryMonitoringPlugin # NEW
 from src.plugins.authorization_plugin import AuthorizationPlugin
 from src.plugins.cost_tracking_plugin import CostTrackingPlugin
 from src.plugins.dynamic_context_plugin import DynamicContextPlugin
+from src.plugins.sanitization_plugin import SanitizationPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class CommunicationManager:
         authorization_plugin: AuthorizationPlugin, # NEW
         dynamic_context_plugin: DynamicContextPlugin, # NEW
         cost_tracking_plugin: CostTrackingPlugin, # NEW
+        sanitization_plugin: SanitizationPlugin, # NEW
     ):
         self.session_service = session_service
         self.casefile_manager = casefile_manager
@@ -40,6 +42,7 @@ class CommunicationManager:
             authorization_plugin,
             dynamic_context_plugin,
             cost_tracking_plugin,
+            sanitization_plugin,
         ]
         self.chat_agent = None
         logger.info("CommunicationManager initialized.")

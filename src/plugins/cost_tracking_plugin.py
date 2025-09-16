@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from google.adk.agents import Agent
-from google.adk.events import Event, EventType
+from google.adk.events import Event
 from google.adk.plugins import BasePlugin
 from google.adk.sessions import Session
 
@@ -31,12 +31,12 @@ class CostTrackingPlugin(BasePlugin):
 
     async def on_event(self, session: Session, event: Event, **kwargs: Any) -> None:
         # Track user input tokens
-        if event.type == EventType.USER_MESSAGE and isinstance(event.content, str):
+        if event.type == "USER_MESSAGE" and isinstance(event.content, str):
             tokens = estimate_tokens(event.content)
             session.state["run_token_usage"]["input"] += tokens
 
         # Track agent output tokens
-        if event.type == EventType.AGENT_MESSAGE and isinstance(event.content, str):
+        if event.type == "AGENT_MESSAGE" and isinstance(event.content, str):
             tokens = estimate_tokens(event.content)
             session.state["run_token_usage"]["output"] += tokens
 

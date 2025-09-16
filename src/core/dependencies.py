@@ -21,6 +21,7 @@ from src.plugins.opentelemetry_plugin import OpenTelemetryMonitoringPlugin
 from src.plugins.authorization_plugin import AuthorizationPlugin
 from src.plugins.cost_tracking_plugin import CostTrackingPlugin
 from src.plugins.dynamic_context_plugin import DynamicContextPlugin
+from src.plugins.sanitization_plugin import SanitizationPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,11 @@ def get_cost_tracking_plugin() -> CostTrackingPlugin:
     logger.debug("Creating singleton instance of CostTrackingPlugin")
     return CostTrackingPlugin(monitoring_service=get_adk_monitoring_service())
 
+@lru_cache(maxsize=None)
+def get_sanitization_plugin() -> SanitizationPlugin:
+    logger.debug("Creating singleton instance of SanitizationPlugin")
+    return SanitizationPlugin(monitoring_service=get_adk_monitoring_service())
+
 # --- Service Getters ---
 
 @lru_cache(maxsize=None)
@@ -118,7 +124,7 @@ def get_chat_agent() -> ChatAgent:
 # --- High-level Manager Getters ---
 
 @lru_cache(maxsize=None)
-def get_communication_manager() -> CommunicationManager:
+def get_communication_.manager() -> CommunicationManager:
     logger.debug("Creating singleton instance of CommunicationManager")
     # Maak de manager aan
     manager = CommunicationManager(
@@ -130,6 +136,7 @@ def get_communication_manager() -> CommunicationManager:
         authorization_plugin=get_authorization_plugin(),
         dynamic_context_plugin=get_dynamic_context_plugin(),
         cost_tracking_plugin=get_cost_tracking_plugin(),
+        sanitization_plugin=get_sanitization_plugin(),
     )
     # Injecteer de agent om een circulaire dependency te voorkomen
     manager.set_chat_agent(get_chat_agent())
