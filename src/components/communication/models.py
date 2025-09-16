@@ -1,7 +1,6 @@
 # src/components/communication/models.py
 
 from pydantic import BaseModel
-from typing import Optional
 
 class ChatRequest(BaseModel):
     """Request model for an incoming chat message."""

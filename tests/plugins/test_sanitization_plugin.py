@@ -1,6 +1,5 @@
 import pytest
-import asyncio
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 from datetime import datetime
 
 from src.plugins.sanitization_plugin import SanitizationPlugin
@@ -11,7 +10,9 @@ pytestmark = pytest.mark.asyncio
 @pytest.fixture
 def mock_monitoring_service():
     """Provides a mock ADKMonitoringService."""
-    return MagicMock()
+    mock_service = MagicMock()
+    mock_service.log_event = AsyncMock() # Make log_event awaitable
+    return mock_service
 
 @pytest.fixture
 def sanitization_plugin(mock_monitoring_service):

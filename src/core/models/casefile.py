@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import Optional
 
 class Casefile(BaseModel):
     id: str = Field(default_factory=lambda: f"case-{uuid.uuid4().hex[:10]}")

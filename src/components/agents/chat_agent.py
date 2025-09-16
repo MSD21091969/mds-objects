@@ -1,7 +1,6 @@
 # src/components/agents/chat_agent.py
 
 import logging
-from typing import Any
 from pydantic import PrivateAttr
 
 from google.adk.agents import LlmAgent

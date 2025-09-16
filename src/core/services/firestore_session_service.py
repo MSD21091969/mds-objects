@@ -3,15 +3,14 @@
 import logging
 import time
 import uuid
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from typing_extensions import override
 
-from google.cloud.firestore_v1.base_query import FieldFilter
 from google.adk.sessions import Session, BaseSessionService
 from google.adk.events import Event, EventActions
 from google.adk.sessions.base_session_service import GetSessionConfig
-from google.adk.sessions.session import Session
+
 from google.genai.types import Content
 
 from opentelemetry import trace # NEW

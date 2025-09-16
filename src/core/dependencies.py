@@ -124,7 +124,7 @@ def get_chat_agent() -> ChatAgent:
 # --- High-level Manager Getters ---
 
 @lru_cache(maxsize=None)
-def get_communication_.manager() -> CommunicationManager:
+def get_communication_manager() -> CommunicationManager:
     logger.debug("Creating singleton instance of CommunicationManager")
     # Maak de manager aan
     manager = CommunicationManager(
