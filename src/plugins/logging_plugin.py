@@ -20,14 +20,23 @@ class LoggingPlugin(BasePlugin):
         self.monitoring_service = monitoring_service
         logger.info("LoggingPlugin initialized.")
 
+    def _get_common_log_data(self, session: Session, agent: Optional[Agent] = None) -> Dict[str, Any]:
+        """Extracts common data points from the session and agent for consistent logging."""
+        data = {
+            "session_id": session.id,
+            "user_id": session.user_id,
+            "app_name": session.app_name,
+            "casefile_id": session.state.get("casefile_id"), # Extract casefile_id if available
+        }
+        if agent:
+            data["agent_name"] = agent.name
+        return {k: v for k, v in data.items() if v is not None} # Filter out None values
+
     async def on_run_start(self, session: Session, agent: Agent, **kwargs: Any) -> None:
         self.monitoring_service.log_event(
             "adk_run_start",
             {
-                "session_id": session.id,
-                "user_id": session.user_id,
-                "app_name": session.app_name,
-                "agent_name": agent.name,
+                **self._get_common_log_data(session, agent),
                 "run_type": "agent_run",
                 **kwargs
             }
@@ -37,7 +46,7 @@ class LoggingPlugin(BasePlugin):
         self.monitoring_service.log_event(
             "adk_event_processed",
             {
-                "session_id": session.id,
+                **self._get_common_log_data(session),
                 "event_type": event.type,
                 "event_timestamp": event.timestamp.isoformat(),
                 "event_content": str(event.content), # Convert content to string for logging
@@ -49,10 +58,7 @@ class LoggingPlugin(BasePlugin):
         self.monitoring_service.log_event(
             "adk_run_end",
             {
-                "session_id": session.id,
-                "user_id": session.user_id,
-                "app_name": session.app_name,
-                "agent_name": agent.name,
+                **self._get_common_log_data(session, agent),
                 "status": "success",
                 **kwargs
             }
@@ -62,10 +68,7 @@ class LoggingPlugin(BasePlugin):
         self.monitoring_service.log_event(
             "adk_run_error",
             {
-                "session_id": session.id,
-                "user_id": session.user_id,
-                "app_name": session.app_name,
-                "agent_name": agent.name,
+                **self._get_common_log_data(session, agent),
                 "status": "error",
                 "error_type": type(error).__name__,
                 "error_message": str(error),
@@ -77,8 +80,7 @@ class LoggingPlugin(BasePlugin):
         self.monitoring_service.log_event(
             "adk_tool_start",
             {
-                "session_id": session.id,
-                "agent_name": agent.name,
+                **self._get_common_log_data(session, agent),
                 "tool_name": tool.name,
                 "tool_args": str(kwargs.get("tool_args")),
                 **kwargs
@@ -89,8 +91,7 @@ class LoggingPlugin(BasePlugin):
         self.monitoring_service.log_event(
             "adk_tool_end",
             {
-                "session_id": session.id,
-                "agent_name": agent.name,
+                **self._get_common_log_data(session, agent),
                 "tool_name": tool.name,
                 "tool_result": str(result), # Convert result to string for logging
                 **kwargs
@@ -101,8 +102,7 @@ class LoggingPlugin(BasePlugin):
         self.monitoring_service.log_event(
             "adk_tool_error",
             {
-                "session_id": session.id,
-                "agent_name": agent.name,
+                **self._get_common_log_data(session, agent),
                 "tool_name": tool.name,
                 "error_type": type(error).__name__,
                 "error_message": str(error),

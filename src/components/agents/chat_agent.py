@@ -46,6 +46,8 @@ class ChatAgent(LlmAgent):
         """Dynamically provides the system prompt based on session state."""
         casefile_id = context.state.get("casefile_id")
         user_json = context.state.get("current_user")
+        # 1. Retrieve the dynamic context injected by the DynamicContextPlugin
+        dynamic_context = context.state.get("dynamic_context", {})
 
         casefile: Casefile | None = None
         if casefile_id:
@@ -53,10 +55,12 @@ class ChatAgent(LlmAgent):
 
         current_user = User.model_validate_json(user_json) if user_json else None
 
+        # 2. Merge all context sources into a single dictionary
         prompt_context = {
             "casefile": casefile.model_dump() if casefile else {"name": "None"},
             "user": current_user.model_dump() if current_user else {"username": "Unknown"},
         }
+        prompt_context.update(dynamic_context)
         
         return await self._prompt_manager.render_prompt(
             agent_name="ChatAgent",

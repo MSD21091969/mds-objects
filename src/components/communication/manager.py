@@ -1,7 +1,7 @@
 # src/components/communication/manager.py
 
 import logging
-from typing import Any, Dict, List # MODIFIED
+from typing import Any, Dict
 
 from google.adk.runners import Runner
 from google.genai import types as genai_types
@@ -10,8 +10,12 @@ from src.core.models.user import User
 from src.core.services.firestore_session_service import FirestoreSessionService
 from src.components.casefile_management.manager import CasefileManager
 from src.core.adk_monitoring.service import ADKMonitoringService # NEW
-from src.core.adk_monitoring.plugins.logging_plugin import LoggingPlugin # NEW
-from src.core.adk_monitoring.plugins.opentelemetry_plugin import OpenTelemetryMonitoringPlugin # NEW
+from src.plugins.logging_plugin import LoggingPlugin # NEW
+from src.plugins.opentelemetry_plugin import OpenTelemetryMonitoringPlugin # NEW
+# Import the new plugins from their correct location
+from src.plugins.authorization_plugin import AuthorizationPlugin
+from src.plugins.cost_tracking_plugin import CostTrackingPlugin
+from src.plugins.dynamic_context_plugin import DynamicContextPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +27,20 @@ class CommunicationManager:
         monitoring_service: ADKMonitoringService, # NEW
         logging_plugin: LoggingPlugin, # NEW
         opentelemetry_plugin: OpenTelemetryMonitoringPlugin, # NEW
+        authorization_plugin: AuthorizationPlugin, # NEW
+        dynamic_context_plugin: DynamicContextPlugin, # NEW
+        cost_tracking_plugin: CostTrackingPlugin, # NEW
     ):
         self.session_service = session_service
         self.casefile_manager = casefile_manager
         self.monitoring_service = monitoring_service # NEW
-        self.logging_plugin = logging_plugin # NEW
-        self.opentelemetry_plugin = opentelemetry_plugin # NEW
+        self.plugins = [
+            logging_plugin,
+            opentelemetry_plugin,
+            authorization_plugin,
+            dynamic_context_plugin,
+            cost_tracking_plugin,
+        ]
         self.chat_agent = None
         logger.info("CommunicationManager initialized.")
 
@@ -67,7 +79,7 @@ class CommunicationManager:
             agent=self.chat_agent,
             session_service=self.session_service,
             app_name=app_name,
-            plugins=[self.logging_plugin, self.opentelemetry_plugin] # NEW
+            plugins=self.plugins
         )
 
         # 3. Voer de agent uit met de nieuwe input van de gebruiker

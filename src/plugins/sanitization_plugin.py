@@ -1,0 +1,37 @@
+import logging
+import re
+from typing import Any
+
+from google.adk.events import Event, EventType
+from google.adk.plugins import BasePlugin
+from google.adk.sessions import Session
+
+from src.core.adk_monitoring.service import ADKMonitoringService
+
+logger = logging.getLogger(__name__)
+
+
+class SanitizationPlugin(BasePlugin):
+    """
+    An ADK plugin that detects potentially malicious input or sensitive output.
+
+    Note: This is a detection-only implementation. Modifying event content
+    in-flight would require deeper changes to the ADK Runner.
+    """
+
+    def __init__(self, monitoring_service: ADKMonitoringService):
+        self.monitoring_service = monitoring_service
+        # Simple regex to detect something that looks like an API key.
+        self.sensitive_pattern = re.compile(r"\b(sk-[a-zA-Z0-9]{32,})\b")
+        logger.info("SanitizationPlugin initialized.")
+
+    async def on_event(self, session: Session, event: Event, **kwargs: Any) -> None:
+        if event.type == EventType.AGENT_MESSAGE and isinstance(event.content, str):
+            if self.sensitive_pattern.search(event.content):
+                log_data = {
+                    "session_id": session.id,
+                    "user_id": session.user_id,
+                    "alert": "Sensitive data pattern detected in agent output.",
+                }
+                self.monitoring_service.log_event("security_alert", log_data)
+                logger.warning(f"Sensitive data pattern detected in agent output for session {session.id}.")

@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 
 from google.adk.plugins import BasePlugin
 from google.adk.events import Event
+from google.adk.agents import Agent
 from google.adk.sessions import Session
 
 from opentelemetry import trace
@@ -20,6 +21,7 @@ class OpenTelemetryMonitoringPlugin(BasePlugin):
         self.monitoring_service = monitoring_service
         self.tracer = trace.get_tracer(app_name)
         self.current_run_span: Optional[trace.Span] = None
+        self.tool_spans: Dict[str, trace.Span] = {}
         logger.info("OpenTelemetryMonitoringPlugin initialized.")
 
     async def on_run_start(self, session: Session, **kwargs: Any) -> None:
@@ -40,21 +42,16 @@ class OpenTelemetryMonitoringPlugin(BasePlugin):
 
     async def on_event(self, session: Session, event: Event, **kwargs: Any) -> None:
         if self.current_run_span:
-            with self.tracer.start_as_current_span(
-                f"adk.event.{event.type}",
-                parent=self.current_run_span,
+            # Use add_event for lightweight event logging on the main span,
+            # instead of creating a noisy child span for every event.
+            self.current_run_span.add_event(
+                name=f"adk.event.{event.type}",
                 attributes={
-                    "adk.event.type": event.type,
-                    "adk.event.timestamp": event.timestamp.isoformat(),
-                    "adk.session_id": session.id,
-                    "adk.event.content_summary": str(event.content)[:250], # Log summary to avoid large payloads
-                }
-            ) as event_span:
-                self.monitoring_service.log_event(
-                    "opentelemetry_event_span",
-                    {"event_type": event.type, "session_id": session.id}
-                )
-                logger.debug(f"Processed ADK event: {event.type} for session {session.id}")
+                    "adk.event.content_summary": str(event.content)[:250]
+                },
+                timestamp=int(event.timestamp.timestamp() * 1e9) # OTel expects nanoseconds
+            )
+            logger.debug(f"Added OpenTelemetry event: {event.type} for session {session.id}")
 
     async def on_run_end(self, session: Session, **kwargs: Any) -> None:
         if self.current_run_span:
@@ -75,3 +72,39 @@ class OpenTelemetryMonitoringPlugin(BasePlugin):
                 {"span_name": f"adk.agent.run.{session.id}", "session_id": session.id, "status": "error", "error_message": str(error)}
             )
             logger.error(f"ADK run for session {session.id} ended with error: {error}")
+
+    async def on_tool_start(self, session: Session, agent: Agent, tool: Any, **kwargs: Any) -> None:
+        if self.current_run_span:
+            tool_args = kwargs.get("tool_args", {})
+            tool_span = self.tracer.start_span(
+                f"adk.tool.{tool.name}",
+                parent=self.current_run_span,
+                attributes={
+                    "adk.session_id": session.id,
+                    "adk.agent_name": agent.name,
+                    "adk.tool.name": tool.name,
+                    "adk.tool.args": str(tool_args),
+                }
+            )
+            # Use a unique key for the tool call, e.g., combining session and tool name
+            span_key = f"{session.id}-{tool.name}"
+            self.tool_spans[span_key] = tool_span
+            logger.debug(f"Started OpenTelemetry span for tool: {tool.name}")
+
+    async def on_tool_end(self, session: Session, agent: Agent, tool: Any, result: Any, **kwargs: Any) -> None:
+        span_key = f"{session.id}-{tool.name}"
+        if span_key in self.tool_spans:
+            tool_span = self.tool_spans.pop(span_key)
+            tool_span.set_attribute("adk.tool.result", str(result)[:500]) # Truncate long results
+            tool_span.set_status(trace.Status(trace.StatusCode.OK))
+            tool_span.end()
+            logger.debug(f"Ended OpenTelemetry span for successful tool: {tool.name}")
+
+    async def on_tool_error(self, session: Session, agent: Agent, tool: Any, error: Exception, **kwargs: Any) -> None:
+        span_key = f"{session.id}-{tool.name}"
+        if span_key in self.tool_spans:
+            tool_span = self.tool_spans.pop(span_key)
+            tool_span.set_status(trace.Status(trace.StatusCode.ERROR, description=str(error)))
+            tool_span.record_exception(error)
+            tool_span.end()
+            logger.error(f"Ended OpenTelemetry span for failed tool: {tool.name}")
