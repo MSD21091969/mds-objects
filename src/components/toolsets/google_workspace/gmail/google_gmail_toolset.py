@@ -6,7 +6,7 @@ from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
 
-from src.components.google_workspace.gmail.service import GoogleGmailService
+from src.components.toolsets.google_workspace.gmail.service import GoogleGmailService
 from src.components.toolsets.google_workspace.gmail.models import GmailMessage
 
 logger = logging.getLogger(__name__)

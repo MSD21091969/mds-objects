@@ -1,1 +1,1 @@
-from .people_toolset import PeopleToolset
+from .google_people_toolset import GooglePeopleToolset

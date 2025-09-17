@@ -5,7 +5,7 @@ from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
 
-from src.components.google_workspace.people.service import GooglePeopleService
+from src.components.toolsets.google_workspace.people.service import GooglePeopleService
 from src.components.toolsets.google_workspace.people.models import GooglePerson
 
 logger = logging.getLogger(__name__)

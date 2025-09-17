@@ -6,7 +6,7 @@ from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
 
-from src.components.google_workspace.drive.service import GoogleDriveService
+from src.components.toolsets.google_workspace.drive.service import GoogleDriveService
 from src.components.toolsets.google_workspace.drive.models import DriveFile
 
 logger = logging.getLogger(__name__)

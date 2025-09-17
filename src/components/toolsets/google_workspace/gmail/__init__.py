@@ -1,1 +1,1 @@
-from .gmail_toolset import GmailToolset
+from .google_gmail_toolset import GoogleGmailToolset

@@ -5,7 +5,7 @@ from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
 
-from src.components.google_workspace.sheets.service import GoogleSheetsService
+from src.components.toolsets.google_workspace.sheets.service import GoogleSheetsService
 from src.components.toolsets.google_workspace.sheets.models import GoogleSheet, ValueRange
 
 logger = logging.getLogger(__name__)

@@ -1,1 +1,1 @@
-from .docs_toolset import DocsToolset
+from .google_docs_toolset import GoogleDocsToolset
