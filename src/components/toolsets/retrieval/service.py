@@ -1,5 +1,5 @@
 import logging
-from src.components.retrieval.models import RetrievalRequest, RetrievalResponse
+from src.components.toolsets.retrieval.models import RetrievalRequest, RetrievalResponse
 
 logger = logging.getLogger(__name__)
 
