@@ -1,2 +1,8 @@
-
 output.log
+__pycache__/
+client_secrets.json
+token.json
+docs/
+y/
+.vscode/
+.pytest_cache/
