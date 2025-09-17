@@ -19,6 +19,7 @@ from src.components.casefile.service import CasefileService
 from src.components.communication.service import CommunicationService
 from src.components.toolsets.retrieval.service import RetrievalService
 from src.components.toolsets.web_search.service import WebSearchService
+from default_api import google_web_search
 from src.components.toolsets.google_workspace.drive.service import GoogleDriveService
 from src.components.toolsets.google_workspace.gmail.service import GoogleGmailService
 from src.components.toolsets.google_workspace.docs.service import GoogleDocsService

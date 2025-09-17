@@ -18,23 +18,34 @@ class PromptManager:
         # In-memory cache voor geladen prompts om database-calls te verminderen.
         self._prompts: Dict[str, str] = {}
         self._jinja_env = Environment()
+        self._prompt_file_path = "/workspaces/mds-objects/docs/prompt chatagent.txt" # Hardcoded for now
+
+    async def _load_prompt_from_file(self) -> str:
+        """Loads the prompt template from the specified file."""
+        try:
+            with open(self._prompt_file_path, "r") as f:
+                return f.read()
+        except FileNotFoundError:
+            logger.error(f"Prompt file not found at {self._prompt_file_path}")
+            return "You are a helpful assistant." # Fallback
+        except Exception as e:
+            logger.error(f"Error loading prompt from file {self._prompt_file_path}: {e}")
+            return "You are a helpful assistant." # Fallback
 
     async def get_prompt_template(self, agent_name: str, task_name: str) -> str:
         """
-        Haalt een prompt-template op. Voor nu gebruiken we een hardcoded template.
+        Haalt een prompt-template op. Voor nu laden we deze uit een bestand.
         Later wordt dit vervangen door een database-call.
         """
         prompt_key = f"{agent_name}-{task_name}"
         if prompt_key not in self._prompts:
-            # Placeholder: In de toekomst laden we dit uit Firestore.
-            # Voor nu, een simpele, effectieve standaard prompt.
-            template = (
-                "You are a helpful assistant. "
-                "The current casefile is '{{ casefile.name }}'. "
-                "You are assisting user '{{ user.username }}'."
-            )
+            if agent_name == "ChatAgent" and task_name == "chat":
+                template = await self._load_prompt_from_file()
+            else:
+                # Fallback for other agents/tasks if needed
+                template = "You are a helpful assistant."
             self._prompts[prompt_key] = template
-            logger.info(f"Loaded placeholder prompt for '{prompt_key}'.")
+            logger.info(f"Loaded prompt for '{prompt_key}' from file.")
         
         return self._prompts[prompt_key]
 
