@@ -1,13 +1,2 @@
-fastapi
-uvicorn[standard]
-google-generativeai
-pip-tools
-google-cloud-firestore
-google-adk==1.13.0
-firebase-admin>=6.6.0
-redis
-jinja2
-passlib==1.7.4
-bcrypt==4.0.1
-python-jose[cryptography]
-opentelemetry-propagator-b3
+-r requirements.txt
+google_auth_oauthlib
