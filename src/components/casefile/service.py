@@ -9,9 +9,9 @@ import json
 from firebase_admin import firestore
 
 from .models import Casefile
-from core.models.user import User
-from core.models.ontology import CasefileRole
-from core.models.user import UserRole
+from src.core.models.user import User
+from src.core.models.ontology import CasefileRole
+from src.core.models.user import UserRole
 
 logger = logging.getLogger(__name__)
 

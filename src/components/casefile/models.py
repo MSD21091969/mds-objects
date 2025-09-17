@@ -4,12 +4,12 @@ from typing import List, Optional, Dict, Any
 
 from pydantic import BaseModel, Field
 
-from ...core.models.ontology import CasefileRole
-from ..google_workspace.drive.models import DriveFile
-from ..google_workspace.gmail.models import GmailMessage
-from ..google_workspace.calendar.models import GoogleCalendarEvent
-from ..google_workspace.docs.models import GoogleDoc
-from ..google_workspace.sheets.models import GoogleSheet
+from src.core.models.ontology import CasefileRole
+from src.components.toolsets.google_workspace.drive.models import DriveFile
+from src.components.toolsets.google_workspace.gmail.models import GmailMessage
+from src.components.toolsets.google_workspace.calendar.models import GoogleCalendarEvent
+from src.components.toolsets.google_workspace.docs.models import GoogleDoc
+from src.components.toolsets.google_workspace.sheets.models import GoogleSheet
 
 
 class Casefile(BaseModel):
@@ -27,6 +27,10 @@ class Casefile(BaseModel):
 
     owner_id: Optional[str] = None  # Added Optional for now
     acl: Dict[str, CasefileRole] = Field(default_factory=dict)
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.owner_id and not self.acl:
+            self.acl = {self.owner_id: CasefileRole.ADMIN}
 
     tags: List[str] = Field(default_factory=list)
 
