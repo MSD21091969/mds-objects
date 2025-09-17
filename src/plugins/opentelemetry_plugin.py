@@ -1,5 +1,6 @@
 import logging
 from typing import Any, Dict, Optional
+import os
 
 from google.adk.plugins import BasePlugin
 from google.adk.events import Event
@@ -7,6 +8,12 @@ from google.adk.agents import Agent
 from google.adk.sessions import Session
 
 from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry import propagate
+from opentelemetry.propagators.b3 import B3Format
 
 from src.core.adk_monitoring.service import ADKMonitoringService
 
@@ -19,7 +26,27 @@ class OpenTelemetryMonitoringPlugin(BasePlugin):
     """
     def __init__(self, monitoring_service: ADKMonitoringService, app_name: str):
         self.monitoring_service = monitoring_service
-        self.tracer = trace.get_tracer(app_name)
+        self.name = "OpenTelemetryMonitoringPlugin"
+        
+        project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+        if not project_id:
+            logger.warning("GOOGLE_CLOUD_PROJECT environment variable not set. OpenTelemetry tracing will be disabled.")
+            self.tracer = trace.get_tracer(app_name) # Initialize a default tracer
+        else:
+            # Create a resource with the project_id
+            resource = Resource.create({"gcp.project_id": project_id})
+
+            # Set up the TracerProvider with the CloudTraceSpanExporter
+            tracer_provider = TracerProvider(resource=resource)
+            cloud_trace_exporter = CloudTraceSpanExporter(project_id=project_id)
+            span_processor = BatchSpanProcessor(cloud_trace_exporter)
+            tracer_provider.add_span_processor(span_processor)
+            trace.set_tracer_provider(tracer_provider)
+            propagate.set_global_textmap(B3Format()) # For context propagation
+
+            self.tracer = trace.get_tracer(app_name)
+            logger.info(f"OpenTelemetry tracing enabled for project: {project_id}")
+
         self.current_run_span: Optional[trace.Span] = None
         self.tool_spans: Dict[str, trace.Span] = {}
         logger.info("OpenTelemetryMonitoringPlugin initialized.")

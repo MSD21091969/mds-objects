@@ -21,8 +21,9 @@ class SanitizationPlugin(BasePlugin):
 
     def __init__(self, monitoring_service: ADKMonitoringService):
         self.monitoring_service = monitoring_service
+        self.name = "SanitizationPlugin"
         # Simple regex to detect something that looks like an API key.
-        self.sensitive_pattern = re.compile(r"\b(sk-[a-zA-Z0-9]{32,})\b")
+        self.sensitive_pattern = re.compile(r"\b(sk-[a-zA-Z0-9]{32,})(?:\s|\.|,|$)")
         self.injection_pattern = re.compile(r"\b(ignore|disregard|forget)\b.*(instructions|prompt)\b", re.IGNORECASE)
         logger.info("SanitizationPlugin initialized.")
 

@@ -29,6 +29,7 @@ class AuthorizationPlugin(BasePlugin):
     """
 
     def __init__(self):
+        self.name = "AuthorizationPlugin"
         logger.info("AuthorizationPlugin initialized.")
 
     async def on_tool_start(

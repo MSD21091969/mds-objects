@@ -8,6 +8,8 @@ from src.components.casefile_management.api import router as casefile_router
 from src.components.communication.api import router as chat_router # NIEUW
 from src.core.dependencies import get_database_manager
 from src.core.managers.database_manager import DatabaseManager
+import os
+
 from src.core.logging_config import setup_logging # NEW
 from src.core.adk_monitoring.telemetry_setup import setup_opentelemetry # NEW
 
@@ -15,12 +17,15 @@ from src.core.adk_monitoring.telemetry_setup import setup_opentelemetry # NEW
 setup_logging() # NEW
 
 # Setup OpenTelemetry
-setup_opentelemetry() # NEW
+project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+setup_opentelemetry(project_id=project_id) # NEW
 
 app = FastAPI(
     title="MDS7 Rebuild API",
     description="De centrale API voor het MDS7 platform.",
-    version="0.2.0"
+    version="0.2.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
 # --- Authenticatie Endpoint ---

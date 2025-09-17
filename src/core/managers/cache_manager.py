@@ -30,7 +30,7 @@ class CacheManager:
             self._client.ping()
             logger.info(f"Successfully connected to Redis at {self.redis_host}:{self.redis_port}.")
         except redis.exceptions.ConnectionError as e:
-            logger.error(f"Error connecting to Redis: {e}", exc_info=True)
+            logger.warning(f"Could not connect to Redis at {self.redis_host}:{self.redis_port}. Caching will be disabled. Error: {e}")
             self._client = None
 
     def get(self, key: str) -> Optional[Any]:

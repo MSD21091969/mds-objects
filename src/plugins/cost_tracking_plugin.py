@@ -23,6 +23,7 @@ class CostTrackingPlugin(BasePlugin):
 
     def __init__(self, monitoring_service: ADKMonitoringService):
         self.monitoring_service = monitoring_service
+        self.name = "CostTrackingPlugin"
         logger.info("CostTrackingPlugin initialized.")
 
     async def on_run_start(self, session: Session, agent: Agent, **kwargs: Any) -> None:

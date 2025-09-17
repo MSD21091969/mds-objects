@@ -18,6 +18,7 @@ class DynamicContextPlugin(BasePlugin):
     """
 
     def __init__(self):
+        self.name = "DynamicContextPlugin"
         logger.info("DynamicContextPlugin initialized.")
 
     async def on_run_start(self, session: Session, agent: Agent, **kwargs: Any) -> None:

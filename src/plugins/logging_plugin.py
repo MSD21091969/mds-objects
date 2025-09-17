@@ -18,6 +18,7 @@ class LoggingPlugin(BasePlugin):
     """
     def __init__(self, monitoring_service: ADKMonitoringService):
         self.monitoring_service = monitoring_service
+        self.name = "LoggingPlugin"
         logger.info("LoggingPlugin initialized.")
 
     def _get_common_log_data(self, session: Session, agent: Optional[Agent] = None) -> Dict[str, Any]:

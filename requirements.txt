@@ -255,6 +255,7 @@ opentelemetry-api==1.37.0
     #   google-adk
     #   google-cloud-logging
     #   opentelemetry-exporter-gcp-trace
+    #   opentelemetry-propagator-b3
     #   opentelemetry-resourcedetector-gcp
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
@@ -262,6 +263,8 @@ opentelemetry-exporter-gcp-trace==1.9.0
     # via
     #   google-adk
     #   google-cloud-aiplatform
+opentelemetry-propagator-b3==1.37.0
+    # via -r requirements.in
 opentelemetry-resourcedetector-gcp==1.9.0a0
     # via opentelemetry-exporter-gcp-trace
 opentelemetry-sdk==1.37.0
@@ -425,6 +428,7 @@ typing-extensions==4.15.0
     #   google-genai
     #   google-generativeai
     #   opentelemetry-api
+    #   opentelemetry-propagator-b3
     #   opentelemetry-resourcedetector-gcp
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions

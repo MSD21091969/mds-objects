@@ -2,6 +2,7 @@
 
 import logging
 from typing import Any, Dict
+from fastapi import HTTPException
 
 from google.adk.runners import Runner
 from google.genai import types as genai_types
@@ -57,6 +58,11 @@ class CommunicationManager:
         """
         if not self.chat_agent:
             raise RuntimeError("ChatAgent has not been set in CommunicationManager.")
+
+        # Validate casefile existence
+        casefile = await self.casefile_manager.get_casefile(casefile_id)
+        if not casefile:
+            raise HTTPException(status_code=404, detail=f"Casefile with ID {casefile_id} not found.")
 
         session_id = f"chat-{current_user.username}-{casefile_id}"
         app_name = "mds7-rebuild"

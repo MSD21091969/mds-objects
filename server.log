@@ -1,0 +1,684 @@
+2025-09-16 23:14:35,406 - root - INFO - Google Cloud Logging handler attached.
+2025-09-16 23:14:35,407 - root - INFO - Basic application logging configured.
+2025-09-16 23:14:35,425 - src.core.adk_monitoring.telemetry_setup - INFO - OpenTelemetry configured with Cloud Trace Exporter.
+INFO:     Started server process [166208]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2025-09-16 23:15:59,655 - src.core.managers.database_manager - INFO - Firebase Admin SDK initialized successfully.
+2025-09-16 23:15:59,657 - src.core.managers.database_manager - INFO - Successfully connected to Firestore.
+INFO:     127.0.0.1:59420 - "POST /token HTTP/1.1" 200 OK
+2025-09-16 23:16:11,801 - src.core.adk_monitoring.service - INFO - ADKMonitoringService initialized.
+2025-09-16 23:16:11,802 - src.core.services.firestore_session_service - INFO - FirestoreSessionService initialized for collection: 'adk_sessions'
+2025-09-16 23:16:11,804 - src.core.managers.cache_manager - WARNING - Could not connect to Redis at localhost:6379. Caching will be disabled. Error: Error 111 connecting to localhost:6379. Connection refused.
+2025-09-16 23:16:11,805 - src.plugins.logging_plugin - INFO - LoggingPlugin initialized.
+2025-09-16 23:16:11,809 - opentelemetry.trace - WARNING - Overriding of current TracerProvider is not allowed
+2025-09-16 23:16:11,809 - src.plugins.opentelemetry_plugin - INFO - OpenTelemetry tracing enabled for project: mailmind-ai-djbuw
+2025-09-16 23:16:11,809 - src.plugins.opentelemetry_plugin - INFO - OpenTelemetryMonitoringPlugin initialized.
+2025-09-16 23:16:11,809 - src.plugins.authorization_plugin - INFO - AuthorizationPlugin initialized.
+2025-09-16 23:16:11,809 - src.plugins.dynamic_context_plugin - INFO - DynamicContextPlugin initialized.
+2025-09-16 23:16:11,809 - src.plugins.cost_tracking_plugin - INFO - CostTrackingPlugin initialized.
+2025-09-16 23:16:11,810 - src.plugins.sanitization_plugin - INFO - SanitizationPlugin initialized.
+2025-09-16 23:16:11,810 - src.components.communication.manager - INFO - CommunicationManager initialized.
+2025-09-16 23:16:11,810 - src.components.agents.chat_agent - INFO - ChatAgent (LlmAgent) initialized.
+2025-09-16 23:16:11,918 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:16:11,918 - src.core.services.firestore_session_service - WARNING - Session 'chat-Sam-case-d26ab66b58' not found in Firestore.
+2025-09-16 23:16:11,919 - src.components.communication.manager - INFO - No existing session 'chat-Sam-case-d26ab66b58', creating new one.
+2025-09-16 23:16:11,964 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:16:11,964 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:16:11,965 - src.core.services.firestore_session_service - INFO - Created and saved session 'chat-Sam-case-d26ab66b58' to Firestore.
+2025-09-16 23:16:11,965 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:16:11,966 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:16:11,967 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:16:11,967 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:16:11,967 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:16:11,968 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:16:11,980 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:16:12,012 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:16:12,012 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:16:12,024 - src.core.managers.prompt_manager - INFO - Loaded placeholder prompt for 'ChatAgent-chat'.
+2025-09-16 23:16:12,037 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:37218 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:16:29,110 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:16:29,110 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:16:29,111 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:16:29,111 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:16:29,111 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:16:29,111 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:16:29,111 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:16:29,135 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:16:29,171 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:16:29,171 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:16:29,188 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:42062 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:18:24,545 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:18:24,546 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:18:24,546 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:18:24,546 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:18:24,546 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:18:24,546 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:18:24,546 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:18:24,583 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:18:24,655 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:18:24,656 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:18:24,672 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:44096 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:21:24,351 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:21:24,355 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:21:24,357 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:21:24,358 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:21:24,358 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:21:24,358 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:21:24,358 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:21:24,389 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:21:24,440 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:21:24,440 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:21:24,470 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:43848 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:21:32,404 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:21:32,404 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:21:32,405 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:21:32,406 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:21:32,406 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:21:32,407 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:21:32,407 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:21:32,420 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:21:32,456 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:21:32,457 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:21:32,478 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:33702 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:21:38,729 - src.components.communication.api - ERROR - Error handling chat request: 404: Casefile with ID case-dasdasd26ab66b58 not found.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 65, in handle_user_request
+    raise HTTPException(status_code=404, detail=f"Casefile with ID {casefile_id} not found.")
+fastapi.exceptions.HTTPException: 404: Casefile with ID case-dasdasd26ab66b58 not found.
+INFO:     127.0.0.1:56050 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:21:46,093 - src.components.communication.api - ERROR - Error handling chat request: 404: Casefile with ID case-dasdasd26ab66b58 not found.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 65, in handle_user_request
+    raise HTTPException(status_code=404, detail=f"Casefile with ID {casefile_id} not found.")
+fastapi.exceptions.HTTPException: 404: Casefile with ID case-dasdasd26ab66b58 not found.
+INFO:     127.0.0.1:46716 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:22:04,430 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:22:04,431 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:22:04,431 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:22:04,431 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:22:04,431 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:22:04,436 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:22:04,436 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:22:04,448 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:22:04,479 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:22:04,480 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:22:04,497 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:36298 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:22:14,067 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:22:14,068 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:22:14,068 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:22:14,068 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:22:14,068 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:22:14,070 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:22:14,071 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:22:14,084 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:22:14,128 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:22:14,129 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:22:14,147 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:54610 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55290 - "POST /token HTTP/1.1" 200 OK
+2025-09-16 23:40:48,971 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:40:48,972 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:40:48,973 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:40:48,973 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:40:48,973 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:40:48,973 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:40:48,973 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:40:48,991 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:40:49,029 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:40:49,029 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:40:49,072 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:52860 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:41:26,503 - src.core.managers.database_manager - INFO - Document 'case-39b43cf66d' saved in collection 'casefiles'.
+INFO:     127.0.0.1:42460 - "POST /api/v1/casefiles?name=1111 HTTP/1.1" 201 Created
+2025-09-16 23:42:48,984 - src.core.managers.database_manager - INFO - Document 'case-45cbde14b7' saved in collection 'casefiles'.
+INFO:     127.0.0.1:36442 - "POST /api/v1/casefiles?name=1111 HTTP/1.1" 201 Created
+2025-09-16 23:43:23,569 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:43:23,570 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:43:23,571 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:43:23,571 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:43:23,571 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:43:23,572 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:43:23,572 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:43:23,591 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:43:23,628 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:43:23,628 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:43:23,647 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:43242 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:53270 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53270 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57402 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57402 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57404 - "POST /api/v1/chat HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:42276 - "POST /token HTTP/1.1" 200 OK
+2025-09-16 23:50:00,983 - src.components.communication.api - ERROR - Error handling chat request: 404: Casefile with ID string not found.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 65, in handle_user_request
+    raise HTTPException(status_code=404, detail=f"Casefile with ID {casefile_id} not found.")
+fastapi.exceptions.HTTPException: 404: Casefile with ID string not found.
+INFO:     127.0.0.1:42276 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:50:29,321 - src.components.communication.api - ERROR - Error handling chat request: 404: Casefile with ID string not found.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 65, in handle_user_request
+    raise HTTPException(status_code=404, detail=f"Casefile with ID {casefile_id} not found.")
+fastapi.exceptions.HTTPException: 404: Casefile with ID string not found.
+INFO:     127.0.0.1:46148 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:50:39,958 - src.components.communication.api - ERROR - Error handling chat request: 404: Casefile with ID string not found.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 65, in handle_user_request
+    raise HTTPException(status_code=404, detail=f"Casefile with ID {casefile_id} not found.")
+fastapi.exceptions.HTTPException: 404: Casefile with ID string not found.
+INFO:     127.0.0.1:56596 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:50:41,804 - src.components.communication.api - ERROR - Error handling chat request: 404: Casefile with ID string not found.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 65, in handle_user_request
+    raise HTTPException(status_code=404, detail=f"Casefile with ID {casefile_id} not found.")
+fastapi.exceptions.HTTPException: 404: Casefile with ID string not found.
+INFO:     127.0.0.1:56596 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error
+2025-09-16 23:51:14,353 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:51:14,353 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-16 23:51:14,354 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-16 23:51:14,355 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-16 23:51:14,355 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-16 23:51:14,355 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-16 23:51:14,355 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-16 23:51:14,389 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:51:14,430 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-16 23:51:14,431 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-16 23:51:14,445 - src.components.communication.api - ERROR - Error handling chat request: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 24, in handle_chat
+    response_data = await comm_manager.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/manager.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 487, in _preprocess_async
+    await tool.process_llm_request(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_tool.py", line 129, in process_llm_request
+    llm_request.append_tools([self])
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/models/llm_request.py", line 102, in append_tools
+    declaration = tool._get_declaration()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/function_tool.py", line 68, in _get_declaration
+    build_function_declaration(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 237, in build_function_declaration
+    else from_function_with_options(new_func, variant)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_automatic_function_calling_util.py", line 382, in from_function_with_options
+    _function_parameter_parse_util._parse_schema_from_parameter(
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 240, in _parse_schema_from_parameter
+    schema_in_any_of = _parse_schema_from_parameter(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 292, in _parse_schema_from_parameter
+    schema.properties[field_name] = _parse_schema_from_parameter(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/_function_parameter_parse_util.py", line 310, in _parse_schema_from_parameter
+    raise ValueError(
+ValueError: Failed to parse the parameter created_at: datetime.datetime of function get_casefile for automatic function calling. Automatic function calling works best with simpler function signature schema, consider manually parsing your function declaration for function get_casefile.
+INFO:     127.0.0.1:42906 - "POST /api/v1/chat HTTP/1.1" 500 Internal Server Error

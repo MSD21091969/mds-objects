@@ -4,6 +4,7 @@ import logging
 from typing import Optional, List, Dict
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools import FunctionTool, BaseTool, ToolContext
+from google.genai import types # New import
 
 from src.components.casefile_management.manager import CasefileManager
 from src.core.models.casefile import Casefile
@@ -29,14 +30,20 @@ class CasefileToolset(BaseToolset):
             logger.error(f"Failed to parse user from tool_context: {e}")
             raise ValueError("Failed to parse user from context.") from e
 
-    async def get_casefile(self, casefile_id: str, tool_context: ToolContext) -> Optional[Casefile]:
+    async def _get_casefile_for_tool(self, casefile_id: str, tool_context: ToolContext) -> Optional[Dict[str, str]]:
         """
-        Retrieves a single casefile by its ID.
+        Retrieves a single casefile by its ID and formats it for tool output.
         
         Args:
             casefile_id: The ID of the casefile to retrieve.
         """
-        return await self._casefile_manager.get_casefile(casefile_id=casefile_id)
+        casefile = await self._casefile_manager.get_casefile(casefile_id=casefile_id)
+        if casefile:
+            # Convert Casefile object to a dictionary, ensuring datetime is a string
+            casefile_dict = casefile.model_dump(mode="json")
+            casefile_dict["created_at"] = casefile.created_at.isoformat()
+            return casefile_dict
+        return None
 
     async def list_casefiles(self, tool_context: ToolContext) -> List[Dict[str, str]]:
         """Lists all available casefiles, returning a list of their names and IDs."""
@@ -47,7 +54,31 @@ class CasefileToolset(BaseToolset):
 
     def get_tools(self) -> list[BaseTool]:
         """Returns a list of all the tool methods in this toolset."""
+        get_casefile_declaration = types.FunctionDeclaration(
+            name="get_casefile",
+            description="Retrieves a single casefile by its ID.",
+            parameters=types.Schema(
+                type=types.SchemaType.OBJECT,
+                properties={
+                    "casefile_id": types.Schema(
+                        type=types.SchemaType.STRING,
+                        description="The ID of the casefile to retrieve."
+                    )
+                },
+                required=["casefile_id"]
+            ),
+            returns=types.Schema(
+                type=types.SchemaType.OBJECT,
+                properties={
+                    "id": types.Schema(type=types.SchemaType.STRING),
+                    "name": types.Schema(type=types.SchemaType.STRING),
+                    "description": types.Schema(type=types.SchemaType.STRING),
+                    "created_at": types.Schema(type=types.SchemaType.STRING), # Represent datetime as string
+                    "owner_id": types.Schema(type=types.SchemaType.STRING),
+                }
+            )
+        )
         return [
-            FunctionTool(func=self.get_casefile),
+            FunctionTool(func=self._get_casefile_for_tool, declaration=get_casefile_declaration),
             FunctionTool(func=self.list_casefiles),
         ]

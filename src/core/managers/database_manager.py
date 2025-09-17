@@ -23,9 +23,6 @@ class DatabaseManager:
         """
         try:
             if not firebase_admin._apps:
-                os.environ['GOOGLE_CLOUD_PROJECT'] = 'mailmind-ai-djbuw'
-                os.environ['GOOGLE_CLOUD_LOCATION'] = 'europe-west4'
-                os.environ['GOOGLE_GENAI_USE_VERTEXAI'] = 'TRUE'
                 cred = credentials.ApplicationDefault()
                 firebase_admin.initialize_app(cred)
                 logger.info("Firebase Admin SDK initialized successfully.")
