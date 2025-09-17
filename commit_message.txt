@@ -1,0 +1,10 @@
+feat: Project restructuring and initial setup
+
+This commit includes a major restructuring of the project, moving components and core functionalities into a new `src` directory structure.
+
+Key changes include:
+- Relocation of various modules to `src/components` and `src/core`.
+- Introduction of placeholder files for `PubSubManager`, `EmbeddingsManager`, `DocumentParser`, and `CasefileRole` to resolve immediate `ModuleNotFoundError` issues during server startup. These placeholders will need to be properly implemented.
+- Initial fixes for import paths to align with the new structure.
+
+The server is not yet fully functional, as further implementation of placeholder modules and potential dependency issues need to be addressed.

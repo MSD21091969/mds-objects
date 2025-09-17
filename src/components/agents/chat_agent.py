@@ -2,13 +2,14 @@
 
 import logging
 from pydantic import PrivateAttr
+from typing import List
 
 from google.adk.agents import LlmAgent
 from google.adk.agents.readonly_context import ReadonlyContext
+from google.adk.tools import Tool
 
 from src.core.managers.prompt_manager import PromptManager
-from src.components.casefile_management.manager import CasefileManager
-from src.components.casefile_management.toolset import CasefileToolset
+from src.components.casefile.service import CasefileService
 from src.core.models.user import User
 from src.core.models.casefile import Casefile
 
@@ -19,26 +20,26 @@ class ChatAgent(LlmAgent):
     Orchestrator for the chat experience, dynamically generating its system prompt.
     """
     _prompt_manager: PromptManager = PrivateAttr()
-    _casefile_manager: CasefileManager = PrivateAttr()
+    _casefile_service: CasefileService = PrivateAttr()
 
     def __init__(
         self,
         name: str,
         model_name: str,
         prompt_manager: PromptManager,
-        casefile_manager: CasefileManager,
-        casefile_toolset: CasefileToolset,
+        casefile_service: CasefileService,
+        tools: List[Tool],
         **kwargs,
     ):
         super().__init__(
             name=name,
             model=model_name,
             instruction=self._provide_instruction,
-            tools=casefile_toolset.get_tools(),
+            tools=tools,
             **kwargs,
         )
         self._prompt_manager = prompt_manager
-        self._casefile_manager = casefile_manager
+        self._casefile_service = casefile_service
         logger.info("ChatAgent (LlmAgent) initialized.")
 
     async def _provide_instruction(self, context: ReadonlyContext) -> str:
@@ -50,7 +51,7 @@ class ChatAgent(LlmAgent):
 
         casefile: Casefile | None = None
         if casefile_id:
-            casefile = await self._casefile_manager.get_casefile(casefile_id)
+            casefile = await self._casefile_service.load_casefile(casefile_id)
 
         current_user = User.model_validate_json(user_json) if user_json else None
 

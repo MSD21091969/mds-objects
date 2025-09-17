@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from src.core.security import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from src.core.models.user import Token
-from src.components.casefile_management.api import router as casefile_router
+from src.components.casefile.api import router as casefile_router
 from src.components.communication.api import router as chat_router # NIEUW
 from src.core.dependencies import get_database_manager
 from src.core.managers.database_manager import DatabaseManager
@@ -50,7 +50,7 @@ async def login_for_access_token(
 
 
 # --- API Routers ---
-app.include_router(casefile_router, prefix="/api/v1", tags=["Casefile Management"])
+app.include_router(casefile_router, prefix="/api/v1", tags=["Casefile"])
 app.include_router(chat_router, prefix="/api/v1", tags=["Communication"]) # NIEUW
 
 

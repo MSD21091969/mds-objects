@@ -8,7 +8,7 @@ from functools import lru_cache
 from src.core.managers.database_manager import DatabaseManager
 from src.core.managers.cache_manager import CacheManager
 from src.core.managers.prompt_manager import PromptManager
-from src.core.managers.pubsub_manager import PubSubManager
+# from src.core.managers.pubsub_manager import PubSubManager
 from src.core.managers.embeddings_manager import EmbeddingsManager
 from src.core.utils.document_parser import DocumentParser
 from src.core.services.firestore_session_service import FirestoreSessionService
@@ -29,26 +29,26 @@ from src.components.toolsets.google_workspace.people.service import GooglePeople
 # --- Component Toolsets ---
 from src.components.toolsets.casefile_toolset import CasefileToolset
 from src.components.toolsets.retrieval.toolset import RetrievalToolset
-from src.components.toolsets.web_search.web_search_toolset import WebSearchToolset
-from src.components.toolsets.google_workspace.drive.drive_toolset import DriveToolset
-from src.components.toolsets.google_workspace.gmail.gmail_toolset import GmailToolset
-from src.components.toolsets.google_workspace.docs.docs_toolset import DocsToolset
-from src.components.toolsets.google_workspace.sheets.sheets_toolset import SheetsToolset
-from src.components.toolsets.google_workspace.calendar.calendar_toolset import CalendarToolset
-from src.components.toolsets.google_workspace.people.people_toolset import PeopleToolset
+from src.components.toolsets.web_search.toolset import WebSearchToolset
+from src.components.toolsets.google_workspace.drive.google_drive_toolset import GoogleDriveToolset
+from src.components.toolsets.google_workspace.gmail.google_gmail_toolset import GoogleGmailToolset
+from src.components.toolsets.google_workspace.docs.google_docs_toolset import GoogleDocsToolset
+from src.components.toolsets.google_workspace.sheets.google_sheets_toolset import GoogleSheetsToolset
+from src.components.toolsets.google_workspace.calendar.google_calendar_toolset import GoogleCalendarToolset
+from src.components.toolsets.google_workspace.people.google_people_toolset import GooglePeopleToolset
 
 # --- Agents ---
 from src.components.agents.chat_agent import ChatAgent
 from src.components.agents.workspace_reporter_agent import WorkspaceReporterAgent
 
 # --- Plugins ---
-from src.plugins.logging_plugin import LoggingPlugin
-from src.plugins.opentelemetry_plugin import OpenTelemetryMonitoringPlugin
+from src.core.adk_monitoring.logging_plugin import LoggingPlugin
+from src.core.adk_monitoring.opentelemetry_plugin import OpenTelemetryMonitoringPlugin
 # Import the new plugins from their correct location
-from src.plugins.authorization_plugin import AuthorizationPlugin
-from src.plugins.cost_tracking_plugin import CostTrackingPlugin
-from src.plugins.dynamic_context_plugin import DynamicContextPlugin
-from src.plugins.sanitization_plugin import SanitizationPlugin
+from src.core.adk_monitoring.authorization_plugin import AuthorizationPlugin
+from src.core.adk_monitoring.cost_tracking_plugin import CostTrackingPlugin
+from src.core.adk_monitoring.dynamic_context_plugin import DynamicContextPlugin
+from src.core.adk_monitoring.sanitization_plugin import SanitizationPlugin
 
 logger = logging.getLogger(__name__)
 
@@ -217,12 +217,14 @@ def get_web_search_toolset() -> WebSearchToolset:
     return WebSearchToolset(web_search_service=get_web_search_service())
 
 @lru_cache(maxsize=None)
-def get_google_drive_toolset() -> DriveToolset:
-    logger.debug("Creating singleton instance of DriveToolset")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return DriveToolset(client_secrets_path=client_secrets_path)
+def get_google_drive_toolset() -> GoogleDriveToolset:
+    logger.debug("Creating singleton instance of GoogleDriveToolset")
+    return GoogleDriveToolset(drive_service=get_google_drive_service())
+
+@lru_cache(maxsize=None)
+def get_gmail_toolset() -> GoogleGmailToolset:
+    logger.debug("Creating singleton instance of GoogleGmailToolset")
+    return GoogleGmailToolset(gmail_service=get_google_gmail_service())
 
 
 # --- Agent Getters ---
@@ -263,15 +265,6 @@ def get_workspace_reporter_agent() -> WorkspaceReporterAgent:
         ]
     )
 
-@lru_cache(maxsize=None)
-def get_gmail_toolset() -> GmailToolset:
-    logger.debug("Creating singleton instance of GmailToolset")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GmailToolset(client_secrets_path=client_secrets_path)
-
-
 # --- High-level Manager Getters ---
 
 @lru_cache(maxsize=None)
@@ -294,36 +287,24 @@ def get_communication_service() -> CommunicationService:
     return service
 
 @lru_cache(maxsize=None)
-def get_google_docs_toolset() -> DocsToolset:
-    logger.debug("Creating singleton instance of DocsToolset")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return DocsToolset(client_secrets_path=client_secrets_path)
+def get_google_docs_toolset() -> GoogleDocsToolset:
+    logger.debug("Creating singleton instance of GoogleDocsToolset")
+    return GoogleDocsToolset(docs_service=get_google_docs_service())
 
 
 @lru_cache(maxsize=None)
-def get_google_sheets_toolset() -> SheetsToolset:
-    logger.debug("Creating singleton instance of SheetsToolset")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return SheetsToolset(client_secrets_path=client_secrets_path)
+def get_google_sheets_toolset() -> GoogleSheetsToolset:
+    logger.debug("Creating singleton instance of GoogleSheetsToolset")
+    return GoogleSheetsToolset(sheets_service=get_google_sheets_service())
 
 
 @lru_cache(maxsize=None)
-def get_google_calendar_toolset() -> CalendarToolset:
-    logger.debug("Creating singleton instance of CalendarToolset")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return CalendarToolset(client_secrets_path=client_secrets_path)
+def get_google_calendar_toolset() -> GoogleCalendarToolset:
+    logger.debug("Creating singleton instance of GoogleCalendarToolset")
+    return GoogleCalendarToolset(calendar_service=get_google_calendar_service())
 
 
 @lru_cache(maxsize=None)
-def get_google_people_toolset() -> PeopleToolset:
-    logger.debug("Creating singleton instance of PeopleToolset")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return PeopleToolset(client_secrets_path=client_secrets_path)
+def get_google_people_toolset() -> GooglePeopleToolset:
+    logger.debug("Creating singleton instance of GooglePeopleToolset")
+    return GooglePeopleToolset(people_service=get_google_people_service())

@@ -1,22 +1,2 @@
-# Python virtual environment
-.venv/
-venv/
 
-# Python cache files
-__pycache__/
-*.pyc
-
-# IDE/Editor-specific files
-.vscode/
-.idea/
-
-# Gedeelde of gevoelige mappen
-shared/
-
-# Temporary/Scratchpad files (added by Gemini CLI)
-basetool.txt
-llms-full.txt
-remarks.txt
-swagger UI APIs.txt
-unicorn.txt__pycache__/
-/docs
+output.log
