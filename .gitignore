@@ -77,3 +77,11 @@ docs/
 y/
 output.log
 pytest.ini__pycache__/
+
+# Log files
+*.log
+
+# Pytest config
+pytest.ini
+server.log
+server.log
