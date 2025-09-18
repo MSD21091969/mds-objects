@@ -75,3 +75,10 @@ htmlcov/
 .cache
 .hypothesis/
 .pytest_cache/
+
+# -----------------------------------------------------------------------------
+# Sectie 6: Project-specifieke bestanden
+# Mappen en bestanden die specifiek zijn voor dit project en niet in de repo horen.
+# -----------------------------------------------------------------------------
+docs/
+output.txt
