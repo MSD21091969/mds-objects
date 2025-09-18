@@ -1,3 +1,6 @@
+from dotenv import load_dotenv # NEW: Import load_dotenv
+load_dotenv() # NEW: Load environment variables from .env file
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta

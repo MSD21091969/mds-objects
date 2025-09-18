@@ -19,7 +19,7 @@ class Casefile(BaseModel):
     """
     id: Optional[str] = Field(default_factory=lambda: f"case-{uuid.uuid4().hex}")
     name: str
-    description: str = ""
+    description: Optional[str] = ""
     casefile_type: str = "research"
 
     created_at: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())

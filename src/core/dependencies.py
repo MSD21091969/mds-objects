@@ -8,7 +8,7 @@ from functools import lru_cache
 from src.core.managers.database_manager import DatabaseManager
 from src.core.managers.cache_manager import CacheManager
 from src.core.managers.prompt_manager import PromptManager
-# from src.core.managers.pubsub_manager import PubSubManager
+from src.core.managers.pubsub_manager import PubSubManager
 from src.core.managers.embeddings_manager import EmbeddingsManager
 from src.core.utils.document_parser import DocumentParser
 from src.core.services.firestore_session_service import FirestoreSessionService
@@ -19,7 +19,7 @@ from src.components.casefile.service import CasefileService
 from src.components.communication.service import CommunicationService
 from src.components.toolsets.retrieval.service import RetrievalService
 from src.components.toolsets.web_search.service import WebSearchService
-from default_api import google_web_search
+
 from src.components.toolsets.google_workspace.drive.service import GoogleDriveService
 from src.components.toolsets.google_workspace.gmail.service import GoogleGmailService
 from src.components.toolsets.google_workspace.docs.service import GoogleDocsService
@@ -30,7 +30,7 @@ from src.components.toolsets.google_workspace.people.service import GooglePeople
 # --- Component Toolsets ---
 from src.components.toolsets.casefile_toolset import CasefileToolset
 from src.components.toolsets.retrieval.toolset import RetrievalToolset
-from src.components.toolsets.web_search.toolset import WebSearchToolset
+from src.components.toolsets.web_search.web_search_toolset import WebSearchToolset
 from src.components.toolsets.google_workspace.drive.google_drive_toolset import GoogleDriveToolset
 from src.components.toolsets.google_workspace.gmail.google_gmail_toolset import GoogleGmailToolset
 from src.components.toolsets.google_workspace.docs.google_docs_toolset import GoogleDocsToolset
@@ -40,7 +40,7 @@ from src.components.toolsets.google_workspace.people.google_people_toolset impor
 
 # --- Agents ---
 from src.components.agents.chat_agent import ChatAgent
-from src.components.agents.workspace_reporter_agent import WorkspaceReporterAgent
+# from src.components.agents.workspace_reporter_agent import WorkspaceReporterAgent
 
 # --- Plugins ---
 from src.core.adk_monitoring.logging_plugin import LoggingPlugin
@@ -252,19 +252,19 @@ def get_chat_agent() -> ChatAgent:
         ]
     )
 
-@lru_cache(maxsize=None)
-def get_workspace_reporter_agent() -> WorkspaceReporterAgent:
-    logger.debug("Creating singleton instance of WorkspaceReporterAgent")
-    return WorkspaceReporterAgent(
-        name="WorkspaceReporterAgent",
-        # This agent performs a specific workflow, so it needs the relevant tools
-        tools=[
-            get_casefile_toolset(),
-            get_google_drive_toolset(),
-            get_gmail_toolset(),
-            get_google_calendar_toolset(),
-        ]
-    )
+# @lru_cache(maxsize=None)
+# def get_workspace_reporter_agent() -> WorkspaceReporterAgent:
+#     logger.debug("Creating singleton instance of WorkspaceReporterAgent")
+#     return WorkspaceReporterAgent(
+#         name="WorkspaceReporterAgent",
+#         # This agent performs a specific workflow, so it needs the relevant tools
+#         tools=[
+#             get_casefile_toolset(),
+#             get_google_drive_toolset(),
+#             get_gmail_toolset(),
+#             get_google_calendar_toolset(),
+#         ]
+#     )
 
 # --- High-level Manager Getters ---
 

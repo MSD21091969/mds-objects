@@ -159,7 +159,7 @@ async def test_no_sensitive_data_with_short_key(sanitization_plugin, mock_monito
 async def test_no_sensitive_data_with_special_chars(sanitization_plugin, mock_monitoring_service, mock_session):
     """Tests that no alert is logged for a key with special characters."""
     # Arrange
-    sensitive_content = "Here is a key with special chars: sk-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0!@#, please keep it safe."
+    sensitive_content = "Here is a key with special chars: sk-a1b2c3d4!@#e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0, please keep it safe."
     event = MagicMock()
     event.type = "AGENT_MESSAGE"
     event.author = "agent"

@@ -6,12 +6,12 @@ from typing import List
 
 from google.adk.agents import LlmAgent
 from google.adk.agents.readonly_context import ReadonlyContext
-from google.adk.tools import Tool
+from google.adk.tools.base_tool import BaseTool
 
 from src.core.managers.prompt_manager import PromptManager
 from src.components.casefile.service import CasefileService
 from src.core.models.user import User
-from src.core.models.casefile import Casefile
+from src.components.casefile.models import Casefile
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class ChatAgent(LlmAgent):
         model_name: str,
         prompt_manager: PromptManager,
         casefile_service: CasefileService,
-        tools: List[Tool],
+        tools: List[BaseTool],
         **kwargs,
     ):
         super().__init__(

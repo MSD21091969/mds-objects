@@ -4,7 +4,8 @@ import logging
 from .service import CommunicationService
 from .models import ChatRequest, ChatResponse
 from src.core.dependencies import get_communication_service
-from src.core.security import get_current_active_user, User
+from src.core.models.user import User
+from src.core.security import get_current_active_user
 
 logger = logging.getLogger(__name__)
 

@@ -105,9 +105,12 @@ class CasefileService:
             logger.info(f"Top-level casefile '{casefile.id}' created by user '{user_id}'.")
             return casefile
 
-    async def list_all_casefiles(self) -> List[Casefile]:
+    async def list_all_casefiles(self) -> List[Casefile]: # The return hint is correct
         """Lists all casefiles from the database."""
-        return await self.db_manager.load_all_casefiles()
+        # The error occurs because get_all returns a list of dicts, not Casefile objects.
+        # We need to convert each dictionary into a Casefile model instance.
+        casefile_dicts = await self.db_manager.get_all("casefiles")
+        return [Casefile(**cf_dict) for cf_dict in casefile_dicts]
 
     async def list_top_level_casefiles(self) -> List[Casefile]:
         """Retrieves all casefiles and filters for only top-level ones."""

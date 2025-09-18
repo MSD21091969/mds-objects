@@ -1,5 +1,6 @@
 import pytest
 from pydantic import ValidationError
+from freezegun import freeze_time
 from src.components.casefile.models import Casefile, CreateCasefileRequest, CasefileUpdate, GrantAccessRequest, RevokeAccessRequest
 from src.core.models.ontology import CasefileRole
 import datetime
@@ -41,13 +42,12 @@ def test_casefile_creation_missing_required_field():
     with pytest.raises(ValidationError):
         Casefile(description="A description", owner_id="user123") # Missing name
 
+@freeze_time("2023-01-01 12:00:00")
 def test_casefile_touch_method():
     casefile = Casefile(name="Touch Test", owner_id="user1")
     original_modified_at = casefile.modified_at
-    # Simulate a small delay to ensure modified_at changes
-    import time
-    time.sleep(0.01)
-    casefile.touch()
+    with freeze_time("2023-01-01 12:00:01"):
+        casefile.touch()
     assert casefile.modified_at != original_modified_at
     assert isinstance(casefile.modified_at, str)
 

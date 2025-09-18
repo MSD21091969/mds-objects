@@ -9,10 +9,11 @@ from .models import (
     RevokeAccessRequest,
 )
 from .service import CasefileService
-from core.dependencies import get_casefile_service
+from src.core.dependencies import get_casefile_service
 
-from core.models.ontology import CasefileRole
-from core.security import User, get_current_active_user
+from src.core.models.ontology import CasefileRole
+from src.core.models.user import User
+from src.core.security import get_current_active_user
 
 router = APIRouter()
 
