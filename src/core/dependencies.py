@@ -192,6 +192,15 @@ def get_google_people_service() -> GooglePeopleService:
         raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
     return GooglePeopleService(client_secrets_path=client_secrets_path)
 
+@lru_cache(maxsize=None)
+def get_google_docs_service() -> GoogleDocsService:
+    logger.debug("Creating singleton instance of GoogleDocsService")
+    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
+    if not os.path.exists(client_secrets_path):
+        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
+    return GoogleDocsService(client_secrets_path=client_secrets_path)
+
+
 # --- Toolset Getters ---
 
 @lru_cache(maxsize=None)
@@ -258,6 +267,7 @@ def get_chat_agent() -> ChatAgent:
             get_gmail_toolset(),
             get_google_calendar_toolset(),
             get_google_people_toolset(),
+            get_google_docs_toolset(),
         ]
     )
 

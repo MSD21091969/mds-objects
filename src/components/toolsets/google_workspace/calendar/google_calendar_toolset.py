@@ -142,49 +142,49 @@ class GoogleCalendarToolset(BaseToolset):
         )
         self.calendar_service.delete_event(calendar_id=calendar_id, event_id=event_id)
 
-    def get_tools(self) -> list[BaseTool]:
+    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """
         Returns a list of tools provided by this toolset.
         """
-        event_schema = adk_types.Schema(
-            type=adk_types.Type.OBJECT,
-            properties={
-                "id": adk_types.Schema(type=adk_types.Type.STRING),
-                "status": adk_types.Schema(type=adk_types.Type.STRING),
-                "summary": adk_types.Schema(type=adk_types.Type.STRING),
-                "description": adk_types.Schema(type=adk_types.Type.STRING),
-                "location": adk_types.Schema(type=adk_types.Type.STRING),
-                "start": adk_types.Schema(
-                    type=adk_types.Type.OBJECT,
-                    properties={
-                        "dateTime": adk_types.Schema(type=adk_types.Type.STRING),
-                        "timeZone": adk_types.Schema(type=adk_types.Type.STRING),
+        event_schema = {
+            "type": adk_types.Type.OBJECT,
+            "properties": {
+                "id": {"type": adk_types.Type.STRING},
+                "status": {"type": adk_types.Type.STRING},
+                "summary": {"type": adk_types.Type.STRING},
+                "description": {"type": adk_types.Type.STRING},
+                "location": {"type": adk_types.Type.STRING},
+                "start": {
+                    "type": adk_types.Type.OBJECT,
+                    "properties": {
+                        "dateTime": {"type": adk_types.Type.STRING},
+                        "timeZone": {"type": adk_types.Type.STRING},
                     },
-                ),
-                "end": adk_types.Schema(
-                    type=adk_types.Type.OBJECT,
-                    properties={
-                        "dateTime": adk_types.Schema(type=adk_types.Type.STRING),
-                        "timeZone": adk_types.Schema(type=adk_types.Type.STRING),
+                },
+                "end": {
+                    "type": adk_types.Type.OBJECT,
+                    "properties": {
+                        "dateTime": {"type": adk_types.Type.STRING},
+                        "timeZone": {"type": adk_types.Type.STRING},
                     },
-                ),
-                "attendees": adk_types.Schema(
-                    type=adk_types.Type.ARRAY,
-                    items=adk_types.Schema(
-                        type=adk_types.Type.OBJECT,
-                        properties={
-                            "email": adk_types.Schema(type=adk_types.Type.STRING),
-                            "displayName": adk_types.Schema(
-                                type=adk_types.Type.STRING
-                            ),
-                            "responseStatus": adk_types.Schema(
-                                type=adk_types.Type.STRING
-                            ),
+                },
+                "attendees": {
+                    "type": adk_types.Type.ARRAY,
+                    "items": {
+                        "type": adk_types.Type.OBJECT,
+                        "properties": {
+                            "email": {"type": adk_types.Type.STRING},
+                            "displayName": {
+                                "type": adk_types.Type.STRING
+                            },
+                            "responseStatus": {
+                                "type": adk_types.Type.STRING
+                            },
                         },
-                    ),
-                ),
+                    },
+                },
             },
-        )
+        }
 
         list_events_declaration = adk_types.FunctionDeclaration(
             name="list_calendar_events",
@@ -192,24 +192,24 @@ class GoogleCalendarToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    "calendar_id": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="Calendar identifier. Default is 'primary'.",
-                    ),
-                    "time_min": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="Start time in ISO 8601 format, e.g., '2023-10-26T10:00:00Z'.",
-                    ),
-                    "time_max": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="End time in ISO 8601 format, e.g., '2023-10-26T12:00:00Z'.",
-                    ),
-                    "max_results": adk_types.Schema(
-                        type=adk_types.Type.INTEGER, description="Maximum number of events to return."
-                    ),
+                    "calendar_id": {
+                        "type": adk_types.Type.STRING,
+                        "description": "Calendar identifier. Default is 'primary'.",
+                    },
+                    "time_min": {
+                        "type": adk_types.Type.STRING,
+                        "description": "Start time in ISO 8601 format, e.g., '2023-10-26T10:00:00Z'.",
+                    },
+                    "time_max": {
+                        "type": adk_types.Type.STRING,
+                        "description": "End time in ISO 8601 format, e.g., '2023-10-26T12:00:00Z'.",
+                    },
+                    "max_results": {
+                        "type": adk_types.Type.INTEGER, "description": "Maximum number of events to return."
+                    },
                 },
             ),
-            returns=adk_types.Schema(type=adk_types.Type.ARRAY, items=event_schema),
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.ARRAY, "items": event_schema}),
         )
 
         create_event_declaration = adk_types.FunctionDeclaration(
@@ -218,36 +218,36 @@ class GoogleCalendarToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    "summary": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="Title of the event."
-                    ),
-                    "start_time": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="Start time in ISO 8601 format, e.g., '2023-10-26T10:00:00Z'.",
-                    ),
-                    "end_time": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="End time in ISO 8601 format, e.g., '2023-10-26T12:00:00Z'.",
-                    ),
-                    "calendar_id": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="Calendar identifier. Default is 'primary'.",
-                    ),
-                    "description": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="Description of the event."
-                    ),
-                    "attendees": adk_types.Schema(
-                        type=adk_types.Type.ARRAY,
-                        items=adk_types.Schema(type=adk_types.Type.STRING),
-                        description="List of attendee email addresses.",
-                    ),
-                    "location": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="Location of the event."
-                    ),
+                    "summary": {
+                        "type": adk_types.Type.STRING, "description": "Title of the event."
+                    },
+                    "start_time": {
+                        "type": adk_types.Type.STRING,
+                        "description": "Start time in ISO 8601 format, e.g., '2023-10-26T10:00:00Z'.",
+                    },
+                    "end_time": {
+                        "type": adk_types.Type.STRING,
+                        "description": "End time in ISO 8601 format, e.g., '2023-10-26T12:00:00Z'.",
+                    },
+                    "calendar_id": {
+                        "type": adk_types.Type.STRING,
+                        "description": "Calendar identifier. Default is 'primary'.",
+                    },
+                    "description": {
+                        "type": adk_types.Type.STRING, "description": "Description of the event."
+                    },
+                    "attendees": {
+                        "type": adk_types.Type.ARRAY,
+                        "items": {"type": adk_types.Type.STRING},
+                        "description": "List of attendee email addresses.",
+                    },
+                    "location": {
+                        "type": adk_types.Type.STRING, "description": "Location of the event."
+                    },
                 },
                 required=["summary", "start_time", "end_time"],
             ),
-            returns=event_schema,
+            returns=adk_types.FunctionDeclaration.schema(**event_schema),
         )
 
         get_event_declaration = adk_types.FunctionDeclaration(
@@ -256,17 +256,17 @@ class GoogleCalendarToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    "event_id": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="ID of the event to retrieve."
-                    ),
-                    "calendar_id": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="Calendar identifier. Default is 'primary'.",
-                    ),
+                    "event_id": {
+                        "type": adk_types.Type.STRING, "description": "ID of the event to retrieve."
+                    },
+                    "calendar_id": {
+                        "type": adk_types.Type.STRING,
+                        "description": "Calendar identifier. Default is 'primary'.",
+                    },
                 },
                 required=["event_id"],
             ),
-            returns=event_schema,
+            returns=adk_types.FunctionDeclaration.schema(**event_schema),
         )
 
         update_event_declaration = adk_types.FunctionDeclaration(
@@ -275,40 +275,40 @@ class GoogleCalendarToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    "event_id": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="ID of the event to update."
-                    ),
-                    "calendar_id": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="Calendar identifier. Default is 'primary'.",
-                    ),
-                    "summary": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="New title for the event."
-                    ),
-                    "description": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="New description for the event.",
-                    ),
-                    "start_time": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="New start time in ISO 8601 format.",
-                    ),
-                    "end_time": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="New end time in ISO 8601 format.",
-                    ),
-                    "attendees": adk_types.Schema(
-                        type=adk_types.Type.ARRAY,
-                        items=adk_types.Schema(type=adk_types.Type.STRING),
-                        description="New list of attendee email addresses.",
-                    ),
-                    "location": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="New location for the event."
-                    ),
+                    "event_id": {
+                        "type": adk_types.Type.STRING, "description": "ID of the event to update."
+                    },
+                    "calendar_id": {
+                        "type": adk_types.Type.STRING,
+                        "description": "Calendar identifier. Default is 'primary'.",
+                    },
+                    "summary": {
+                        "type": adk_types.Type.STRING, "description": "New title for the event."
+                    },
+                    "description": {
+                        "type": adk_types.Type.STRING,
+                        "description": "New description for the event.",
+                    },
+                    "start_time": {
+                        "type": adk_types.Type.STRING,
+                        "description": "New start time in ISO 8601 format.",
+                    },
+                    "end_time": {
+                        "type": adk_types.Type.STRING,
+                        "description": "New end time in ISO 8601 format.",
+                    },
+                    "attendees": {
+                        "type": adk_types.Type.ARRAY,
+                        "items": {"type": adk_types.Type.STRING},
+                        "description": "New list of attendee email addresses.",
+                    },
+                    "location": {
+                        "type": adk_types.Type.STRING, "description": "New location for the event."
+                    },
                 },
                 required=["event_id"],
             ),
-            returns=event_schema,
+            returns=adk_types.FunctionDeclaration.schema(**event_schema),
         )
 
         delete_event_declaration = adk_types.FunctionDeclaration(
@@ -317,16 +317,17 @@ class GoogleCalendarToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    "event_id": adk_types.Schema(
-                        type=adk_types.Type.STRING, description="ID of the event to delete."
-                    ),
-                    "calendar_id": adk_types.Schema(
-                        type=adk_types.Type.STRING,
-                        description="Calendar identifier. Default is 'primary'.",
-                    ),
+                    "event_id": {
+                        "type": adk_types.Type.STRING, "description": "ID of the event to delete."
+                    },
+                    "calendar_id": {
+                        "type": adk_types.Type.STRING,
+                        "description": "Calendar identifier. Default is 'primary'.",
+                    },
                 },
                 required=["event_id"],
             ),
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
         )
 
         return [

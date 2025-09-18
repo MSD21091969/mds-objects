@@ -74,17 +74,17 @@ class GooglePeopleToolset(BaseToolset):
         """
         Returns a list of tools provided by this toolset.
         """
-        google_person_schema = adk_types.Schema(
-            type=adk_types.Type.OBJECT,
-            description="Represents a person in Google Contacts.",
-            properties={
-                'resource_name': adk_types.Schema(type=adk_types.Type.STRING, description="The unique resource name for the contact."),
-                'etag': adk_types.Schema(type=adk_types.Type.STRING, description="The ETag of the resource, required for updates."),
-                'display_name': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's full name."),
-                'email_addresses': adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.STRING), description="A list of the contact's email addresses."),
-                'phone_numbers': adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.STRING), description="A list of the contact's phone numbers."),
+        google_person_schema = {
+            "type": adk_types.Type.OBJECT,
+            "description": "Represents a person in Google Contacts.",
+            "properties": {
+                'resource_name': {"type": adk_types.Type.STRING, "description": "The unique resource name for the contact."},
+                'etag': {"type": adk_types.Type.STRING, "description": "The ETag of the resource, required for updates."},
+                'display_name': {"type": adk_types.Type.STRING, "description": "The contact's full name."},
+                'email_addresses': {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.STRING}, "description": "A list of the contact's email addresses."},
+                'phone_numbers': {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.STRING}, "description": "A list of the contact's phone numbers."},
             }
-        )
+        }
 
         list_contacts_declaration = adk_types.FunctionDeclaration(
             name="list_google_contacts",
@@ -92,13 +92,13 @@ class GooglePeopleToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'page_size': adk_types.Schema(type=adk_types.Type.INTEGER, description="The maximum number of contacts to return. Defaults to 100."),
+                    'page_size': {"type": adk_types.Type.INTEGER, "description": "The maximum number of contacts to return. Defaults to 100."},
                 }
             ),
-            returns=adk_types.Schema(
-                type=adk_types.Type.ARRAY,
-                items=google_person_schema
-            )
+            returns=adk_types.FunctionDeclaration.schema(**{
+                "type": adk_types.Type.ARRAY,
+                "items": google_person_schema
+            })
         )
 
         get_contact_declaration = adk_types.FunctionDeclaration(
@@ -107,11 +107,11 @@ class GooglePeopleToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'resource_name': adk_types.Schema(type=adk_types.Type.STRING, description="The resource name of the contact to retrieve (e.g., 'people/c123456')."),
+                    'resource_name': {"type": adk_types.Type.STRING, "description": "The resource name of the contact to retrieve (e.g., 'people/c123456')."},
                 },
                 required=['resource_name']
             ),
-            returns=google_person_schema
+            returns=adk_types.FunctionDeclaration.schema(**google_person_schema)
         )
 
         create_contact_declaration = adk_types.FunctionDeclaration(
@@ -120,14 +120,14 @@ class GooglePeopleToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'given_name': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's first name."),
-                    'family_name': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's last name."),
-                    'email': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's primary email address."),
-                    'phone': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's primary phone number."),
+                    'given_name': {"type": adk_types.Type.STRING, "description": "The contact's first name."},
+                    'family_name': {"type": adk_types.Type.STRING, "description": "The contact's last name."},
+                    'email': {"type": adk_types.Type.STRING, "description": "The contact's primary email address."},
+                    'phone': {"type": adk_types.Type.STRING, "description": "The contact's primary phone number."}
                 },
                 required=['given_name', 'family_name']
             ),
-            returns=google_person_schema
+            returns=adk_types.FunctionDeclaration.schema(**google_person_schema)
         )
 
         update_contact_declaration = adk_types.FunctionDeclaration(
@@ -136,16 +136,16 @@ class GooglePeopleToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'resource_name': adk_types.Schema(type=adk_types.Type.STRING, description="The resource name of the contact to update."),
-                    'etag': adk_types.Schema(type=adk_types.Type.STRING, description="The ETag of the contact, used for optimistic concurrency control."),
-                    'given_name': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's new first name."),
-                    'family_name': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's new last name."),
-                    'email': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's new primary email address."),
-                    'phone': adk_types.Schema(type=adk_types.Type.STRING, description="The contact's new primary phone number."),
+                    'resource_name': {"type": adk_types.Type.STRING, "description": "The resource name of the contact to update."},
+                    'etag': {"type": adk_types.Type.STRING, "description": "The ETag of the contact, used for optimistic concurrency control."},
+                    'given_name': {"type": adk_types.Type.STRING, "description": "The contact's new first name."},
+                    'family_name': {"type": adk_types.Type.STRING, "description": "The contact's new last name."},
+                    'email': {"type": adk_types.Type.STRING, "description": "The contact's new primary email address."},
+                    'phone': {"type": adk_types.Type.STRING, "description": "The contact's new primary phone number."},
                 },
                 required=['resource_name', 'etag']
             ),
-            returns=google_person_schema
+            returns=adk_types.FunctionDeclaration.schema(**google_person_schema)
         )
 
         delete_contact_declaration = adk_types.FunctionDeclaration(
@@ -154,11 +154,11 @@ class GooglePeopleToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'resource_name': adk_types.Schema(type=adk_types.Type.STRING, description="The resource name of the contact to delete."),
+                    'resource_name': {"type": adk_types.Type.STRING, "description": "The resource name of the contact to delete."},
                 },
                 required=['resource_name']
             ),
-            returns=adk_types.Schema(type=adk_types.Type.STRING, description="A confirmation message indicating success.")
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
         )
 
         return [

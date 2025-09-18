@@ -76,32 +76,32 @@ class GoogleGmailToolset(BaseToolset):
         """
         Returns a list of tools provided by this toolset.
         """
-        gmail_attachment_schema = adk_types.Schema(
-            type=adk_types.Type.OBJECT,
-            properties={
-                'attachment_id': adk_types.Schema(type=adk_types.Type.STRING, description="The attachment's ID."),
-                'filename': adk_types.Schema(type=adk_types.Type.STRING, description="The original filename of the attachment."),
-                'mime_type': adk_types.Schema(type=adk_types.Type.STRING, description="The MIME type of the attachment."),
-                'size': adk_types.Schema(type=adk_types.Type.INTEGER, description="The size of the attachment in bytes."),
+        gmail_attachment_schema = {
+            "type": adk_types.Type.OBJECT,
+            "properties": {
+                'attachment_id': {"type": adk_types.Type.STRING, "description": "The attachment's ID."},
+                'filename': {"type": adk_types.Type.STRING, "description": "The original filename of the attachment."},
+                'mime_type': {"type": adk_types.Type.STRING, "description": "The MIME type of the attachment."},
+                'size': {"type": adk_types.Type.INTEGER, "description": "The size of the attachment in bytes."},
             }
-        )
+        }
 
-        gmail_message_schema = adk_types.Schema(
-            type=adk_types.Type.OBJECT,
-            description="Represents a single Gmail email message.",
-            properties={
-                'id': adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the email message."),
-                'thread_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the thread the message belongs to."),
-                'subject': adk_types.Schema(type=adk_types.Type.STRING, description="The subject line of the email."),
-                'from_address': adk_types.Schema(type=adk_types.Type.STRING, description="The sender's email address."),
-                'to_addresses': adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.STRING), description="List of recipient email addresses."),
-                'date': adk_types.Schema(type=adk_types.Type.STRING, description="The date the email was sent, in ISO 8601 format."),
-                'snippet': adk_types.Schema(type=adk_types.Type.STRING, description="A short snippet of the email's content."),
-                'body_plain': adk_types.Schema(type=adk_types.Type.STRING, description="The plain text body of the email."),
-                'body_html': adk_types.Schema(type=adk_types.Type.STRING, description="The HTML body of the email."),
-                'attachments': adk_types.Schema(type=adk_types.Type.ARRAY, items=gmail_attachment_schema, description="A list of attachments in the email."),
+        gmail_message_schema = {
+            "type": adk_types.Type.OBJECT,
+            "description": "Represents a single Gmail email message.",
+            "properties": {
+                'id': {"type": adk_types.Type.STRING, "description": "The unique ID of the email message."},
+                'thread_id': {"type": adk_types.Type.STRING, "description": "The ID of the thread the message belongs to."},
+                'subject': {"type": adk_types.Type.STRING, "description": "The subject line of the email."},
+                'from_address': {"type": adk_types.Type.STRING, "description": "The sender's email address."},
+                'to_addresses': {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.STRING}, "description": "List of recipient email addresses."},
+                'date': {"type": adk_types.Type.STRING, "description": "The date the email was sent, in ISO 8601 format."},
+                'snippet': {"type": adk_types.Type.STRING, "description": "A short snippet of the email's content."},
+                'body_plain': {"type": adk_types.Type.STRING, "description": "The plain text body of the email."},
+                'body_html': {"type": adk_types.Type.STRING, "description": "The HTML body of the email."},
+                'attachments': {"type": adk_types.Type.ARRAY, "items": gmail_attachment_schema, "description": "A list of attachments in the email."},
             }
-        )
+        }
 
         search_emails_declaration = adk_types.FunctionDeclaration(
             name="search_gmail_emails",
@@ -109,12 +109,15 @@ class GoogleGmailToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'start_date': adk_types.Schema(type=adk_types.Type.STRING, description="The start date for the search in YYYY-MM-DD format."),
-                    'end_date': adk_types.Schema(type=adk_types.Type.STRING, description="The end date for the search in YYYY-MM-DD format."),
+                    'start_date': {"type": adk_types.Type.STRING, "description": "The start date for the search in YYYY-MM-DD format."},
+                    'end_date': {"type": adk_types.Type.STRING, "description": "The end date for the search in YYYY-MM-DD format."},
                 },
                 required=['start_date', 'end_date']
             ),
-            returns=adk_types.Schema(type=adk_types.Type.ARRAY, items=gmail_message_schema)
+            returns=adk_types.FunctionDeclaration.schema(**{
+                "type": adk_types.Type.ARRAY,
+                "items": gmail_message_schema
+            })
         )
 
         get_email_declaration = adk_types.FunctionDeclaration(
@@ -123,11 +126,11 @@ class GoogleGmailToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'message_id': adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the email message to retrieve."),
+                    'message_id': {"type": adk_types.Type.STRING, "description": "The unique ID of the email message to retrieve."},
                 },
                 required=['message_id']
             ),
-            returns=gmail_message_schema
+            returns=adk_types.FunctionDeclaration.schema(**gmail_message_schema)
         )
 
         send_email_declaration = adk_types.FunctionDeclaration(
@@ -136,13 +139,13 @@ class GoogleGmailToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'to': adk_types.Schema(type=adk_types.Type.STRING, description="The recipient's email address."),
-                    'subject': adk_types.Schema(type=adk_types.Type.STRING, description="The subject line of the email."),
-                    'message_text': adk_types.Schema(type=adk_types.Type.STRING, description="The plain text body of the email."),
+                    'to': {"type": adk_types.Type.STRING, "description": "The recipient's email address."},
+                    'subject': {"type": adk_types.Type.STRING, "description": "The subject line of the email."},
+                    'message_text': {"type": adk_types.Type.STRING, "description": "The plain text body of the email."}
                 },
                 required=['to', 'subject', 'message_text']
             ),
-            returns=gmail_message_schema
+            returns=adk_types.FunctionDeclaration.schema(**gmail_message_schema)
         )
 
         delete_email_declaration = adk_types.FunctionDeclaration(
@@ -151,11 +154,11 @@ class GoogleGmailToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'message_id': adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the email message to delete."),
+                    'message_id': {"type": adk_types.Type.STRING, "description": "The unique ID of the email message to delete."},
                 },
                 required=['message_id']
             ),
-            returns=adk_types.Schema(type=adk_types.Type.STRING, description="A confirmation message indicating success.")
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
         )
 
         return [

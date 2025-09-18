@@ -73,30 +73,31 @@ class GoogleSheetsToolset(BaseToolset):
         """
         Returns a list of tools provided by this toolset.
         """
-        google_sheet_schema = adk_types.Schema(
-            type=adk_types.Type.OBJECT,
-            description="Represents a Google Sheets spreadsheet.",
-            properties={
-                'spreadsheet_id': adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the spreadsheet."),
-                'spreadsheet_url': adk_types.Schema(type=adk_types.Type.STRING, description="The URL of the spreadsheet."),
-                'properties': adk_types.Schema(
-                    type=adk_types.Type.OBJECT,
-                    properties={
-                        'title': adk_types.Schema(type=adk_types.Type.STRING, description="The title of the spreadsheet.")
+        google_sheet_schema = {
+            "type": adk_types.Type.OBJECT,
+            "description": "Represents a Google Sheets spreadsheet.",
+            "properties": {
+                'id': {"type": adk_types.Type.STRING, "description": "The unique ID of the spreadsheet."},
+                'url': {"type": adk_types.Type.STRING, "description": "The URL of the spreadsheet."},
+                'title': {
+                    "type": adk_types.Type.STRING,
+                    "description": "The title of the spreadsheet."
                     }
-                )
             }
-        )
+        }
 
-        value_range_schema = adk_types.Schema(
-            type=adk_types.Type.OBJECT,
-            description="Represents a range of values from a sheet.",
-            properties={
-                'range': adk_types.Schema(type=adk_types.Type.STRING, description="The A1 notation of the range that was read."),
-                'major_dimension': adk_types.Schema(type=adk_types.Type.STRING, description="The major dimension of the values (ROWS or COLUMNS)."),
-                'values': adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.STRING)), description="The data that was read or written.")
+        value_range_schema = {
+            "type": adk_types.Type.OBJECT,
+            "description": "Represents a range of values from a sheet.",
+            "properties": {
+                'range': {"type": adk_types.Type.STRING, "description": "The A1 notation of the range that was read."},
+                'major_dimension': {"type": adk_types.Type.STRING, "description": "The major dimension of the values (ROWS or COLUMNS)."},
+                'values': {
+                    "type": adk_types.Type.ARRAY, 
+                    "items": {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.ANY}}, 
+                    "description": "The data that was read or written."}
             }
-        )
+        }
 
         create_spreadsheet_declaration = adk_types.FunctionDeclaration(
             name="create_google_sheet",
@@ -104,11 +105,11 @@ class GoogleSheetsToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'title': adk_types.Schema(type=adk_types.Type.STRING, description="The title for the new spreadsheet."),
+                    'title': {"type": adk_types.Type.STRING, "description": "The title for the new spreadsheet."},
                 },
                 required=['title']
             ),
-            returns=google_sheet_schema
+            returns=adk_types.FunctionDeclaration.schema(**google_sheet_schema)
         )
 
         get_spreadsheet_declaration = adk_types.FunctionDeclaration(
@@ -117,11 +118,11 @@ class GoogleSheetsToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'spreadsheet_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the spreadsheet to retrieve."),
+                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to retrieve."},
                 },
                 required=['spreadsheet_id']
             ),
-            returns=google_sheet_schema
+            returns=adk_types.FunctionDeclaration.schema(**google_sheet_schema)
         )
 
         read_range_declaration = adk_types.FunctionDeclaration(
@@ -130,12 +131,12 @@ class GoogleSheetsToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'spreadsheet_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the spreadsheet to read from."),
-                    'range_name': adk_types.Schema(type=adk_types.Type.STRING, description="The range to read in A1 notation (e.g., 'Sheet1!A1:C5')."),
+                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to read from."},
+                    'range_name': {"type": adk_types.Type.STRING, "description": "The range to read in A1 notation (e.g., 'Sheet1!A1:C5')."},
                 },
                 required=['spreadsheet_id', 'range_name']
             ),
-            returns=value_range_schema
+            returns=adk_types.FunctionDeclaration.schema(**value_range_schema)
         )
 
         write_range_declaration = adk_types.FunctionDeclaration(
@@ -144,13 +145,13 @@ class GoogleSheetsToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'spreadsheet_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the spreadsheet to write to."),
-                    'range_name': adk_types.Schema(type=adk_types.Type.STRING, description="The range to write in A1 notation (e.g., 'Sheet1!A1')."),
-                    'values': adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.ANY)), description="A list of lists representing the rows and cells to write."),
+                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to write to."},
+                    'range_name': {"type": adk_types.Type.STRING, "description": "The range to write in A1 notation (e.g., 'Sheet1!A1')."},
+                    'values': {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.ANY}}, "description": "A list of lists representing the rows and cells to write."},
                 },
                 required=['spreadsheet_id', 'range_name', 'values']
             ),
-            returns=adk_types.Schema(type=adk_types.Type.OBJECT, description="An object containing details about the write operation.")
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.OBJECT, "description": "An object containing details about the write operation."})
         )
 
         delete_spreadsheet_declaration = adk_types.FunctionDeclaration(
@@ -159,11 +160,11 @@ class GoogleSheetsToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'spreadsheet_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the spreadsheet to delete."),
+                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to delete."},
                 },
                 required=['spreadsheet_id']
             ),
-            returns=adk_types.Schema(type=adk_types.Type.STRING, description="A confirmation message indicating success.")
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
         )
 
         return [

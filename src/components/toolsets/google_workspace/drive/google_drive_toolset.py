@@ -79,18 +79,18 @@ class GoogleDriveToolset(BaseToolset):
         """
         Returns a list of tools provided by this toolset.
         """
-        drive_file_schema = adk_types.Schema(
-            type=adk_types.Type.OBJECT,
-            properties={
-                'id': adk_types.Schema(type=adk_types.Type.STRING, description="The file's ID."),
-                'name': adk_types.Schema(type=adk_types.Type.STRING, description="The name of the file."),
-                'mime_type': adk_types.Schema(type=adk_types.Type.STRING, description="The MIME type of the file."),
-                'created_time': adk_types.Schema(type=adk_types.Type.STRING, description="The creation time of the file in ISO 8601 format."),
-                'modified_time': adk_types.Schema(type=adk_types.Type.STRING, description="The last modification time of the file in ISO 8601 format."),
-                'web_view_link': adk_types.Schema(type=adk_types.Type.STRING, description="A link for opening the file in a web browser."),
-                'icon_link': adk_types.Schema(type=adk_types.Type.STRING, description="A link to the file's icon."),
+        drive_file_schema = {
+            "type": adk_types.Type.OBJECT,
+            "properties": {
+                'id': {"type": adk_types.Type.STRING, "description": "The file's ID."},
+                'name': {"type": adk_types.Type.STRING, "description": "The name of the file."},
+                'mime_type': {"type": adk_types.Type.STRING, "description": "The MIME type of the file."},
+                'created_time': {"type": adk_types.Type.STRING, "description": "The creation time of the file in ISO 8601 format."},
+                'modified_time': {"type": adk_types.Type.STRING, "description": "The last modification time of the file in ISO 8601 format."},
+                'web_view_link': {"type": adk_types.Type.STRING, "description": "A link for opening the file in a web browser."},
+                'icon_link': {"type": adk_types.Type.STRING, "description": "A link to the file's icon."},
             }
-        )
+        }
 
         list_files_declaration = adk_types.FunctionDeclaration(
             name="list_drive_files",
@@ -98,15 +98,15 @@ class GoogleDriveToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'start_date': adk_types.Schema(type=adk_types.Type.STRING, description="The start date in YYYY-MM-DD format."),
-                    'end_date': adk_types.Schema(type=adk_types.Type.STRING, description="The end date in YYYY-MM-DD format."),
+                    'start_date': {"type": adk_types.Type.STRING, "description": "The start date in YYYY-MM-DD format."},
+                    'end_date': {"type": adk_types.Type.STRING, "description": "The end date in YYYY-MM-DD format."},
                 },
                 required=['start_date', 'end_date']
             ),
-            returns=adk_types.Schema(
-                type=adk_types.Type.ARRAY,
-                items=drive_file_schema
-            )
+            returns=adk_types.FunctionDeclaration.schema(**{
+                "type": adk_types.Type.ARRAY,
+                "items": drive_file_schema
+            })
         )
 
         upload_file_declaration = adk_types.FunctionDeclaration(
@@ -115,13 +115,13 @@ class GoogleDriveToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'file_path': adk_types.Schema(type=adk_types.Type.STRING, description="The local path to the file to be uploaded."),
-                    'file_name': adk_types.Schema(type=adk_types.Type.STRING, description="The name the file should have in Google Drive."),
-                    'mime_type': adk_types.Schema(type=adk_types.Type.STRING, description="The MIME type of the file (e.g., 'text/plain', 'image/jpeg')."),
+                    'file_path': {"type": adk_types.Type.STRING, "description": "The local path to the file to be uploaded."},
+                    'file_name': {"type": adk_types.Type.STRING, "description": "The name the file should have in Google Drive."},
+                    'mime_type': {"type": adk_types.Type.STRING, "description": "The MIME type of the file (e.g., 'text/plain', 'image/jpeg')."}
                 },
                 required=['file_path', 'file_name', 'mime_type']
             ),
-            returns=drive_file_schema
+            returns=adk_types.FunctionDeclaration.schema(**drive_file_schema)
         )
 
         download_file_declaration = adk_types.FunctionDeclaration(
@@ -130,12 +130,12 @@ class GoogleDriveToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'file_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the file to download."),
-                    'destination_path': adk_types.Schema(type=adk_types.Type.STRING, description="The local path where the file should be saved."),
+                    'file_id': {"type": adk_types.Type.STRING, "description": "The ID of the file to download."},
+                    'destination_path': {"type": adk_types.Type.STRING, "description": "The local path where the file should be saved."},
                 },
                 required=['file_id', 'destination_path']
             ),
-            returns=adk_types.Schema(type=adk_types.Type.STRING, description="A confirmation message indicating success.")
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
         )
 
         delete_file_declaration = adk_types.FunctionDeclaration(
@@ -144,11 +144,11 @@ class GoogleDriveToolset(BaseToolset):
             parameters=adk_types.Schema(
                 type=adk_types.Type.OBJECT,
                 properties={
-                    'file_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the file to delete."),
+                    'file_id': {"type": adk_types.Type.STRING, "description": "The ID of the file to delete."},
                 },
                 required=['file_id']
             ),
-            returns=adk_types.Schema(type=adk_types.Type.STRING, description="A confirmation message indicating success.")
+            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
         )
 
         return [
