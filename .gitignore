@@ -1,6 +1,5 @@
 # -----------------------------------------------------------------------------
 # Sectie 1: Python-specifieke bestanden
-# Voorkomt dat gecompileerde bestanden, caches en packages worden gecommit.
 # -----------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
@@ -27,7 +26,6 @@ pip-delete-this-directory.txt
 
 # -----------------------------------------------------------------------------
 # Sectie 2: Virtual Environments
-# Zorgt ervoor dat uw lokale Python-omgeving nooit wordt meegenomen.
 # -----------------------------------------------------------------------------
 .env
 .venv
@@ -39,7 +37,6 @@ venv.bak/
 
 # -----------------------------------------------------------------------------
 # Sectie 3: IDE & Editor Configuratie
-# Negeert instellingen die specifiek zijn voor uw lokale editor (VSCode, PyCharm, etc.).
 # -----------------------------------------------------------------------------
 .idea/
 .vscode/
@@ -48,7 +45,6 @@ venv.bak/
 
 # -----------------------------------------------------------------------------
 # Sectie 4: Credentials & Gevoelige Data
-# Beschermt uw geheimen en tokens.
 # -----------------------------------------------------------------------------
 # Google Cloud
 client_secrets.json
@@ -64,9 +60,7 @@ secrets.yml
 
 # -----------------------------------------------------------------------------
 # Sectie 5: Logs & Test Artefacten
-# Houdt dynamisch gegenereerde logbestanden en testrapporten buiten de repo.
 # -----------------------------------------------------------------------------
-*.log
 htmlcov/
 .tox/
 .nox/
@@ -77,8 +71,9 @@ htmlcov/
 .pytest_cache/
 
 # -----------------------------------------------------------------------------
-# Sectie 6: Project-specifieke bestanden
-# Mappen en bestanden die specifiek zijn voor dit project en niet in de repo horen.
+# Sectie 6: Project-specifieke bestanden en logs
 # -----------------------------------------------------------------------------
 docs/
-output.txt
+y/
+output.log
+pytest.ini
