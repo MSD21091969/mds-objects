@@ -12,6 +12,19 @@ from src.components.toolsets.google_workspace.docs.models import GoogleDoc
 from src.components.toolsets.google_workspace.sheets.models import GoogleSheet
 
 
+class ProcessedArtifact(BaseModel):
+    """
+    Represents a file that has been processed and stored in Google Cloud Storage.
+    """
+    gcs_uri: str = Field(description="The URI of the file in Google Cloud Storage (e.g., gs://bucket-name/path/to/file).")
+    source_id: str = Field(description="The ID of the original source object (e.g., an email message ID or a drive file ID).")
+    filename: str
+    mime_type: str
+    processed_at: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
+    size_bytes: Optional[int] = None
+
+
+
 class Casefile(BaseModel):
     """
     The central, all-encompassing dossier-object for the MDS platform.
@@ -43,8 +56,8 @@ class Casefile(BaseModel):
         default_factory=list, description="A list of IDs of associated ADK Session instances."
     )
 
-    processed_files: List[Dict[str, Any]] = Field(
-        default_factory=list, description="A list of files processed during ingestion, including their metadata."
+    processed_files: List[ProcessedArtifact] = Field(
+        default_factory=list, description="A list of artifacts processed during ingestion and stored in GCS."
     )
     
     drive_files_count: Optional[int] = 0
@@ -79,7 +92,7 @@ class CasefileUpdate(BaseModel):
     description: Optional[str] = None
     casefile_type: Optional[str] = None
     tags: Optional[List[str]] = None
-    processed_files: Optional[List[Dict[str, Any]]] = None
+    processed_files: Optional[List[ProcessedArtifact]] = None
     drive_files_count: Optional[int] = None
     gmail_messages_count: Optional[int] = None
     calendar_events_count: Optional[int] = None

@@ -7,8 +7,8 @@ from typing import List, Dict
 import asyncio
 
 # Dependency Getters
-from MDSAPP.core.dependencies import (
-    get_casefile_manager,
+from src.core.dependencies import (
+    get_casefile_service,
     get_google_drive_service,
     get_google_gmail_service,
     get_google_calendar_service,
@@ -16,10 +16,10 @@ from MDSAPP.core.dependencies import (
 from google.cloud import storage
 
 # Models
-from MDSAPP.core.models.GoogleWorkspace.drive import DriveFile
-from MDSAPP.core.models.GoogleWorkspace.gmail import GmailMessage
-from MDSAPP.core.models.GoogleWorkspace.calendar import GoogleCalendarEvent
-from MDSAPP.CasefileManagement.models.casefile import CasefileUpdate
+from src.core.models.google_workspace.drive import DriveFile
+from src.core.models.google_workspace.gmail import GmailMessage
+from src.core.models.google_workspace.calendar import GoogleCalendarEvent
+from src.components.casefile.models.casefile import CasefileUpdate
 
 # --- Configuration ---
 GCS_BUCKET_NAME = "mds7-casefile-artifacts"
@@ -105,11 +105,11 @@ async def process_attachments_task(messages: List[GmailMessage]) -> List[FileArt
 async def create_report_casefile_task(user_id: str, start_time: datetime, end_time: datetime, report_type: str = "Automated") -> str:
     logger = get_run_logger()
     logger.info("STARTING: create_report_casefile_task")
-    casefile_manager = get_casefile_manager()
+    casefile_service = get_casefile_service()
     report_name = f"Workspace Activity Report: {end_time.strftime('%Y-%m-%d %H:%M')}"
     report_description = f"{report_type} report of new Google Workspace activity for user '{user_id}' since {start_time.isoformat()}."
     logger.info(f"Creating casefile: '{report_name}'...")
-    new_casefile = await casefile_manager.create_casefile(
+    new_casefile = await casefile_service.create_casefile(
         user_id=user_id, name=report_name, description=report_description
     )
     logger.info(f"COMPLETED: create_report_casefile_task - Created casefile with ID: {new_casefile.id}")
@@ -126,7 +126,7 @@ async def aggregate_and_save_task(
     tag: str = "automated-sync"
 ) -> None:
     logger = get_run_logger()
-    casefile_manager = get_casefile_manager()
+    casefile_service = get_casefile_service()
 
     # Update metadata in the main document
     updates = CasefileUpdate(
@@ -137,7 +137,7 @@ async def aggregate_and_save_task(
         artifacts_count=len(artifacts)
     )
     
-    await casefile_manager.update_casefile(
+    await casefile_service.update_casefile(
         casefile_id=casefile_id, 
         user_id=user_id, 
         updates=updates.model_dump(exclude_unset=True)
@@ -146,13 +146,13 @@ async def aggregate_and_save_task(
     # Use asyncio.gather for concurrent subcollection writes
     tasks = []
     for item in drive_files:
-        tasks.append(casefile_manager.add_document_to_subcollection(casefile_id, "drive_files", item.model_dump(), item.id))
+        tasks.append(casefile_service.add_document_to_subcollection(casefile_id, "drive_files", item.model_dump(), item.id))
     for item in gmail_messages:
-        tasks.append(casefile_manager.add_document_to_subcollection(casefile_id, "gmail_messages", item.model_dump(), item.id))
+        tasks.append(casefile_service.add_document_to_subcollection(casefile_id, "gmail_messages", item.model_dump(), item.id))
     for item in calendar_events:
-        tasks.append(casefile_manager.add_document_to_subcollection(casefile_id, "calendar_events", item.model_dump(), item.id))
+        tasks.append(casefile_service.add_document_to_subcollection(casefile_id, "calendar_events", item.model_dump(), item.id))
     for item in artifacts:
-        tasks.append(casefile_manager.add_document_to_subcollection(casefile_id, "artifacts", item.model_dump()))
+        tasks.append(casefile_service.add_document_to_subcollection(casefile_id, "artifacts", item.model_dump()))
 
     await asyncio.gather(*tasks)
 

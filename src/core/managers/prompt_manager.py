@@ -2,8 +2,8 @@
 
 import logging
 from typing import Dict, Any
+from typing import Optional
 from jinja2 import Environment
-
 # We importeren de DatabaseManager om er later mee te kunnen werken.
 from .database_manager import DatabaseManager
 
@@ -18,7 +18,8 @@ class PromptManager:
         # In-memory cache voor geladen prompts om database-calls te verminderen.
         self._prompts: Dict[str, str] = {}
         self._jinja_env = Environment()
-        self._prompt_file_path = "/workspaces/mds-objects/docs/prompt chatagent.txt" # Hardcoded for now
+        self._prompt_file_path = "/workspaces/mds-objects/docs/prompt chatagent.txt"  # Hardcoded for now
+        self.prompts_collection_name = "prompt_templates"
 
     async def _load_prompt_from_file(self) -> str:
         """Loads the prompt template from the specified file."""
@@ -32,22 +33,44 @@ class PromptManager:
             logger.error(f"Error loading prompt from file {self._prompt_file_path}: {e}")
             return "You are a helpful assistant." # Fallback
 
+    async def _load_prompt_from_firestore(self, prompt_key: str) -> Optional[str]:
+        """Attempts to load a prompt template from Firestore."""
+        try:
+            prompt_doc = await self.db_manager.get(self.prompts_collection_name, prompt_key)
+            if prompt_doc and 'template' in prompt_doc:
+                logger.info(f"Found prompt template '{prompt_key}' in Firestore.")
+                return prompt_doc['template']
+        except Exception as e:
+            logger.error(f"Error loading prompt '{prompt_key}' from Firestore: {e}")
+        return None
+
     async def get_prompt_template(self, agent_name: str, task_name: str) -> str:
         """
-        Haalt een prompt-template op. Voor nu laden we deze uit een bestand.
-        Later wordt dit vervangen door een database-call.
+        Retrieves a prompt template, trying Firestore first and then falling back to a local file.
         """
         prompt_key = f"{agent_name}-{task_name}"
         if prompt_key not in self._prompts:
-            if agent_name == "ChatAgent" and task_name == "chat":
-                template = await self._load_prompt_from_file()
-            else:
-                # Fallback for other agents/tasks if needed
-                template = "You are a helpful assistant."
+            # 1. Try to load from Firestore
+            template = await self._load_prompt_from_firestore(prompt_key)
+
+            # 2. If not in Firestore, fall back to local file
+            if template is None:
+                logger.warning(f"Prompt template '{prompt_key}' not found in Firestore. Falling back to local file.")
+                if agent_name == "ChatAgent" and task_name == "chat":
+                    template = await self._load_prompt_from_file()
+                else:
+                    # Fallback for other agents/tasks if needed
+                    template = "You are a helpful assistant."
+                logger.info(f"Loaded prompt for '{prompt_key}' from file.")
+
             self._prompts[prompt_key] = template
-            logger.info(f"Loaded prompt for '{prompt_key}' from file.")
-        
+
         return self._prompts[prompt_key]
+
+    async def save_prompt_template(self, prompt_key: str, template_string: str):
+        """Saves a prompt template to Firestore."""
+        await self.db_manager.save(self.prompts_collection_name, prompt_key, {"template": template_string})
+        logger.info(f"Saved prompt template '{prompt_key}' to Firestore.")
 
     async def render_prompt(self, agent_name: str, task_name: str, context: Dict[str, Any]) -> str:
         """

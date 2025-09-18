@@ -8,7 +8,7 @@ import asyncio
 import json
 from firebase_admin import firestore
 
-from .models import Casefile
+from .models import Casefile, ProcessedArtifact
 from src.core.models.user import User
 from src.core.models.ontology import CasefileRole
 from src.core.models.user import UserRole
@@ -201,14 +201,18 @@ class CasefileService:
 
             for key, value in updates.items():
                 if hasattr(casefile, key):
-                    if key == "processed_files":
-                        setattr(casefile, key, value)
-                    elif isinstance(getattr(casefile, key), list):
+                    # Special handling for lists of Pydantic models
+                    if key == "processed_files" and isinstance(value, list):
+                        # Convert list of dicts to list of ProcessedArtifact models
+                        setattr(casefile, key, [ProcessedArtifact(**item) for item in value])
+                    elif isinstance(getattr(casefile, key), list) and key != "processed_files":
+                        # Generic handling for other lists (like tags)
                         current_value = getattr(casefile, key)
                         new_items = value if isinstance(value, list) else [value]
                         updated_list = list(dict.fromkeys(current_value + new_items))
                         setattr(casefile, key, updated_list)
                     else:
+                        # Handling for simple fields
                         setattr(casefile, key, value)
                 else:
                     logger.warning(f"Attempted to update non-existent attribute '{key}' on Casefile '{casefile_id}'.")

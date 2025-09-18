@@ -13,7 +13,7 @@ class StateManager:
     to a dedicated document in Firestore.
     """
     def __init__(self, collection_name: str = "system_state", doc_id: str = "sync_watermarks"):
-        from MDSAPP.core.dependencies import get_database_manager
+        from src.core.dependencies import get_database_manager
         self.db_manager = get_database_manager()
         self.collection_name = collection_name
         self.doc_id = doc_id

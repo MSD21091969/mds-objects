@@ -10,7 +10,7 @@ from .models import (
 )
 from .service import CasefileService
 from src.core.dependencies import get_casefile_service
-
+from src.core.models.ontology import CasefileRole
 from src.core.models.ontology import CasefileRole
 from src.core.models.user import User
 from src.core.security import get_current_active_user

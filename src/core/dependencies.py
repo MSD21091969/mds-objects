@@ -169,14 +169,6 @@ def get_google_gmail_service() -> GoogleGmailService:
     return GoogleGmailService(client_secrets_path=client_secrets_path)
 
 @lru_cache(maxsize=None)
-def get_google_docs_service() -> GoogleDocsService:
-    logger.debug("Creating singleton instance of GoogleDocsService")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GoogleDocsService(client_secrets_path=client_secrets_path)
-
-@lru_cache(maxsize=None)
 def get_google_sheets_service() -> GoogleSheetsService:
     logger.debug("Creating singleton instance of GoogleSheetsService")
     client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
@@ -227,6 +219,25 @@ def get_gmail_toolset() -> GoogleGmailToolset:
     logger.debug("Creating singleton instance of GoogleGmailToolset")
     return GoogleGmailToolset(gmail_service=get_google_gmail_service())
 
+@lru_cache(maxsize=None)
+def get_google_sheets_toolset() -> GoogleSheetsToolset:
+    logger.debug("Creating singleton instance of GoogleSheetsToolset")
+    return GoogleSheetsToolset(sheets_service=get_google_sheets_service())
+
+@lru_cache(maxsize=None)
+def get_google_docs_toolset() -> GoogleDocsToolset:
+    logger.debug("Creating singleton instance of GoogleDocsToolset")
+    return GoogleDocsToolset(docs_service=get_google_docs_service())
+
+@lru_cache(maxsize=None)
+def get_google_calendar_toolset() -> GoogleCalendarToolset:
+    logger.debug("Creating singleton instance of GoogleCalendarToolset")
+    return GoogleCalendarToolset(calendar_service=get_google_calendar_service())
+
+@lru_cache(maxsize=None)
+def get_google_people_toolset() -> GooglePeopleToolset:
+    logger.debug("Creating singleton instance of GooglePeopleToolset")
+    return GooglePeopleToolset(people_service=get_google_people_service())
 
 # --- Agent Getters ---
 
@@ -245,8 +256,6 @@ def get_chat_agent() -> ChatAgent:
             get_web_search_toolset(),
             get_google_drive_toolset(),
             get_gmail_toolset(),
-            get_google_docs_toolset(),
-            get_google_sheets_toolset(),
             get_google_calendar_toolset(),
             get_google_people_toolset(),
         ]
@@ -286,26 +295,3 @@ def get_communication_service() -> CommunicationService:
     # Injecteer de agent om een circulaire dependency te voorkomen
     service.set_chat_agent(get_chat_agent())
     return service
-
-@lru_cache(maxsize=None)
-def get_google_docs_toolset() -> GoogleDocsToolset:
-    logger.debug("Creating singleton instance of GoogleDocsToolset")
-    return GoogleDocsToolset(docs_service=get_google_docs_service())
-
-
-@lru_cache(maxsize=None)
-def get_google_sheets_toolset() -> GoogleSheetsToolset:
-    logger.debug("Creating singleton instance of GoogleSheetsToolset")
-    return GoogleSheetsToolset(sheets_service=get_google_sheets_service())
-
-
-@lru_cache(maxsize=None)
-def get_google_calendar_toolset() -> GoogleCalendarToolset:
-    logger.debug("Creating singleton instance of GoogleCalendarToolset")
-    return GoogleCalendarToolset(calendar_service=get_google_calendar_service())
-
-
-@lru_cache(maxsize=None)
-def get_google_people_toolset() -> GooglePeopleToolset:
-    logger.debug("Creating singleton instance of GooglePeopleToolset")
-    return GooglePeopleToolset(people_service=get_google_people_service())

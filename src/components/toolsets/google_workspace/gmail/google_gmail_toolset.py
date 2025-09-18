@@ -5,6 +5,8 @@ from typing import List, Dict, Any, Optional
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
+from google.adk.tools import ToolContext
+from google.genai import types as adk_types
 
 from src.components.toolsets.google_workspace.gmail.service import GoogleGmailService
 from src.components.toolsets.google_workspace.gmail.models import GmailMessage
@@ -24,7 +26,7 @@ class GoogleGmailToolset(BaseToolset):
         if not self.gmail_service or not self.gmail_service.service:
             raise ConnectionError("GoogleGmailService is not available or not authenticated.")
 
-    def search_emails_by_date_range(self, start_date: str, end_date: str) -> List[GmailMessage]:
+    def _search_emails_by_date_range(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
         """
         Searches for emails from the user's inbox within a specified date range.
 
@@ -33,7 +35,7 @@ class GoogleGmailToolset(BaseToolset):
             end_date: The end date in YYYY-MM-DD format.
 
         Returns:
-            A list of GmailMessage objects.
+            A list of dictionaries representing GmailMessage objects.
         """
         self._ensure_service()
         try:
@@ -43,36 +45,134 @@ class GoogleGmailToolset(BaseToolset):
             raise ValueError("Invalid date format. Please use YYYY-MM-DD.")
 
         logger.info(f"Toolset is calling gmail_service.search_emails with start_date={start_date} and end_date={end_date}")
-        return self.gmail_service.search_emails(start_date=start_date_obj, end_date=end_date_obj)
+        messages = self.gmail_service.search_emails(start_date=start_date_obj, end_date=end_date_obj)
+        return [msg.model_dump() for msg in messages]
 
-    def get_email(self, message_id: str) -> Optional[GmailMessage]:
+    def _get_email(self, message_id: str) -> Optional[Dict[str, Any]]:
         """
         Gets a single email by its ID.
         """
         self._ensure_service()
-        return self.gmail_service.get_email(message_id)
+        email = self.gmail_service.get_email(message_id)
+        return email.model_dump() if email else None
 
-    def send_email(self, to: str, subject: str, message_text: str) -> Optional[GmailMessage]:
+    def _send_email(self, to: str, subject: str, message_text: str) -> Optional[Dict[str, Any]]:
         """
         Sends an email.
         """
         self._ensure_service()
-        return self.gmail_service.send_email(to, subject, message_text)
+        sent_email = self.gmail_service.send_email(to, subject, message_text)
+        return sent_email.model_dump() if sent_email else None
 
-    def delete_email(self, message_id: str):
+    def _delete_email(self, message_id: str) -> str:
         """
         Deletes an email by its ID.
         """
         self._ensure_service()
         self.gmail_service.delete_email(message_id)
+        return f"Email with ID '{message_id}' deleted successfully."
 
-    def get_tools(self) -> list[BaseTool]:
+    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """
         Returns a list of tools provided by this toolset.
         """
+        gmail_attachment_schema = adk_types.Schema(
+            type=adk_types.Type.OBJECT,
+            properties={
+                'attachment_id': adk_types.Schema(type=adk_types.Type.STRING, description="The attachment's ID."),
+                'filename': adk_types.Schema(type=adk_types.Type.STRING, description="The original filename of the attachment."),
+                'mime_type': adk_types.Schema(type=adk_types.Type.STRING, description="The MIME type of the attachment."),
+                'size': adk_types.Schema(type=adk_types.Type.INTEGER, description="The size of the attachment in bytes."),
+            }
+        )
+
+        gmail_message_schema = adk_types.Schema(
+            type=adk_types.Type.OBJECT,
+            description="Represents a single Gmail email message.",
+            properties={
+                'id': adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the email message."),
+                'thread_id': adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the thread the message belongs to."),
+                'subject': adk_types.Schema(type=adk_types.Type.STRING, description="The subject line of the email."),
+                'from_address': adk_types.Schema(type=adk_types.Type.STRING, description="The sender's email address."),
+                'to_addresses': adk_types.Schema(type=adk_types.Type.ARRAY, items=adk_types.Schema(type=adk_types.Type.STRING), description="List of recipient email addresses."),
+                'date': adk_types.Schema(type=adk_types.Type.STRING, description="The date the email was sent, in ISO 8601 format."),
+                'snippet': adk_types.Schema(type=adk_types.Type.STRING, description="A short snippet of the email's content."),
+                'body_plain': adk_types.Schema(type=adk_types.Type.STRING, description="The plain text body of the email."),
+                'body_html': adk_types.Schema(type=adk_types.Type.STRING, description="The HTML body of the email."),
+                'attachments': adk_types.Schema(type=adk_types.Type.ARRAY, items=gmail_attachment_schema, description="A list of attachments in the email."),
+            }
+        )
+
+        search_emails_declaration = adk_types.FunctionDeclaration(
+            name="search_gmail_emails",
+            description="Searches for emails in the user's inbox within a specified date range.",
+            parameters=adk_types.Schema(
+                type=adk_types.Type.OBJECT,
+                properties={
+                    'start_date': adk_types.Schema(type=adk_types.Type.STRING, description="The start date for the search in YYYY-MM-DD format."),
+                    'end_date': adk_types.Schema(type=adk_types.Type.STRING, description="The end date for the search in YYYY-MM-DD format."),
+                },
+                required=['start_date', 'end_date']
+            ),
+            returns=adk_types.Schema(type=adk_types.Type.ARRAY, items=gmail_message_schema)
+        )
+
+        get_email_declaration = adk_types.FunctionDeclaration(
+            name="get_gmail_email",
+            description="Retrieves the full details of a single email by its message ID.",
+            parameters=adk_types.Schema(
+                type=adk_types.Type.OBJECT,
+                properties={
+                    'message_id': adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the email message to retrieve."),
+                },
+                required=['message_id']
+            ),
+            returns=gmail_message_schema
+        )
+
+        send_email_declaration = adk_types.FunctionDeclaration(
+            name="send_gmail_email",
+            description="Creates and sends a new email message.",
+            parameters=adk_types.Schema(
+                type=adk_types.Type.OBJECT,
+                properties={
+                    'to': adk_types.Schema(type=adk_types.Type.STRING, description="The recipient's email address."),
+                    'subject': adk_types.Schema(type=adk_types.Type.STRING, description="The subject line of the email."),
+                    'message_text': adk_types.Schema(type=adk_types.Type.STRING, description="The plain text body of the email."),
+                },
+                required=['to', 'subject', 'message_text']
+            ),
+            returns=gmail_message_schema
+        )
+
+        delete_email_declaration = adk_types.FunctionDeclaration(
+            name="delete_gmail_email",
+            description="Permanently deletes an email by its message ID. This action cannot be undone.",
+            parameters=adk_types.Schema(
+                type=adk_types.Type.OBJECT,
+                properties={
+                    'message_id': adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the email message to delete."),
+                },
+                required=['message_id']
+            ),
+            returns=adk_types.Schema(type=adk_types.Type.STRING, description="A confirmation message indicating success.")
+        )
+
         return [
-            FunctionTool(func=self.search_emails_by_date_range),
-            FunctionTool(func=self.get_email),
-            FunctionTool(func=self.send_email),
-            FunctionTool(func=self.delete_email),
+            FunctionTool(
+                func=self._search_emails_by_date_range,
+                declaration=search_emails_declaration
+            ),
+            FunctionTool(
+                func=self._get_email,
+                declaration=get_email_declaration
+            ),
+            FunctionTool(
+                func=self._send_email,
+                declaration=send_email_declaration
+            ),
+            FunctionTool(
+                func=self._delete_email,
+                declaration=delete_email_declaration
+            ),
         ]

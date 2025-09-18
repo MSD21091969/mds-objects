@@ -1,0 +1,44 @@
+##### 1. Finish the reintegrating of BaseToolsets from previous app. version to the current code: folder /components/toolsets. It contains all "old adk toolsets"
+
+First: Check 3 toolsets in folders /retrieval /websearch and /casefile. Each folder (except casefile) contains the toolset.py file with all adk agent tools 
+per category, and the data model file and the service class (manager) file. So it class model- toolset - service class. Casefile model and serviceclass is 
+the exception, these files are under the casefile component/casefile folder together with their api.py file. Same goes for commmunication service, model and 
+service class are together with their api.py. Please verify that all imports, paths, correct naming for manager and model classes, adk basetoolsets. This needs refactoring. 
+These toolsets must be made available to the /agent/chat_agent by best adk practice so check references /docs/reference.txt
+
+Second: Do the same for /components/toolsets/google_workspace. It contains the base_service.py with asbtract baseclass for google workspace and then
+the 6 subfolders, eacht with different part of the google workspace. The naming for all these files is highly confusing. I want you to apply best practices while refactoring. 
+I want the same model-toolset-service class system with the right nomenclature. ADK reference: /docs/reference.txt : especially tooldeclaration, tool wrapping, 
+correct descriptions in functions.
+
+##### 2. Theres an "old" ontology.py in /docs. I want you to integrate it into /core/models and remove other one. Then refactor.
+
+
+##### 3. Check the prompting by chatagent-prompt_manager.py-prompt.py. Then view files in /docs prompt chatagent.py is the "old" firestore template 
+that was used to render prompt. also file update_chat prompt for firestore. Make sure the new code works with firestore too, just look at the code and if you need name database or GCproject , just ask.
+
+##### 4. The rest of the /docs files we'll comne back to later. One I would like to emphasize, autorize_google_services.py, it belongs in /scripts and i use it before app start 
+to get my token for google toolsets, but it doesnt completely workl (in new code, old version no problem)
+
+##### 5. I re-wrote this new code b/c it is cleaner than "old" one, it uses a dependency hub, sophistcated adk_monitoring plugins in separate folder,
+It will be connected to pubsub (adk plugin streaming, but also other topic/subscriptions, for instance Prefect flow data) and google cloud logging/tracing, GCS storage.
+Also Bigquery for searching of collected data. So thats the direction we're headed.
+
+I made an empty folder for:
+/core/adk_callback_patters
+Possibly latyer also folders for other specific adk code envolving state/context/artifacts etc
+
+And a folder wit the old prefect flow.py files:
+/components/prefect_flows
+
+
+##### 6.
+I want to deploy the fastapi app on cloud run. Would i need to do some preps, for instance my credentials
+and auth in a secret manager ? And my own JWT login, how bout that when in cloud. See .json files and env. file.  
+I thought about also extending the app (pubusb, bigquery,etc) and moved to codepace for this reason to (besided the re-writing of old application),
+got some advice on how to finalize my original intention with old app to build a small datapipeline and analysis
+architecture with a prefect server/worker on cloud run that retrieves/syncs data from for ex. my google workspace, extracts all metadata, saves files, bodies, attachemtents 
+to temporary buckets (later analysis), links it all to a new casefile (firestore is single source of truth) and reports on pubsub too. Looking for a cool solution, please give me three options.
+
+
+### 7. Finally: Lets fix the code, make sure we get the "old" functionalities back (smooth chatroom, agent with lots of tools, good conversation skills)  

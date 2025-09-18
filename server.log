@@ -1,20 +1,99 @@
-2025-09-18 06:32:02,685 - root - INFO - Basic application logging configured.
-2025-09-18 06:32:02,739 - src.core.adk_monitoring.telemetry_setup - INFO - OpenTelemetry configured with Cloud Trace Exporter.
-2025-09-18 06:32:37,990 - src.core.managers.database_manager - INFO - Firebase Admin SDK initialized successfully.
-2025-09-18 06:32:38,031 - src.core.managers.database_manager - INFO - Successfully connected to Firestore.
-2025-09-18 06:32:38,032 - src.core.managers.cache_manager - WARNING - Could not connect to Redis at localhost:6379. Caching will be disabled. Error: Error 111 connecting to localhost:6379. Connection refused.
-2025-09-18 06:32:38,032 - src.components.casefile.service - INFO - CasefileService initialized.
-2025-09-18 06:33:42,092 - src.core.adk_monitoring.service - INFO - ADKMonitoringService initialized.
-2025-09-18 06:33:42,092 - src.core.services.firestore_session_service - INFO - FirestoreSessionService initialized for collection: 'adk_sessions'
-2025-09-18 06:33:42,093 - src.core.adk_monitoring.logging_plugin - INFO - LoggingPlugin initialized.
-2025-09-18 06:33:42,137 - opentelemetry.trace - WARNING - Overriding of current TracerProvider is not allowed
-2025-09-18 06:33:42,137 - src.core.adk_monitoring.opentelemetry_plugin - INFO - OpenTelemetry tracing enabled for project: mailmind-ai-djbuw
-2025-09-18 06:33:42,137 - src.core.adk_monitoring.opentelemetry_plugin - INFO - OpenTelemetryMonitoringPlugin initialized.
-2025-09-18 06:33:42,137 - src.core.adk_monitoring.authorization_plugin - INFO - AuthorizationPlugin initialized.
-2025-09-18 06:33:42,138 - src.core.adk_monitoring.dynamic_context_plugin - INFO - DynamicContextPlugin initialized.
-2025-09-18 06:33:42,138 - src.core.adk_monitoring.cost_tracking_plugin - INFO - CostTrackingPlugin initialized.
-2025-09-18 06:33:42,138 - src.core.adk_monitoring.sanitization_plugin - INFO - SanitizationPlugin initialized.
-2025-09-18 06:33:42,138 - src.components.communication.service - INFO - CommunicationService initialized.
-2025-09-18 06:33:42,184 - src.components.toolsets.google_workspace.base_service - INFO - Application Default Credentials not found or invalid. Falling back to OAuth flow.
-2025-09-18 06:33:42,184 - src.components.toolsets.google_workspace.base_service - INFO - Attempting authentication using local OAuth 2.0 flow (token.json / client_secrets.json).
-2025-09-18 06:33:42,184 - src.components.toolsets.google_workspace.base_service - ERROR - Authentication failed. No valid credentials found (neither ADC nor token.json). To use OAuth, set MDS_ALLOW_INTERACTIVE_AUTH=1. To use a service account, ensure GOOGLE_APPLICATION_CREDENTIALS is set correctly.
+2025-09-18 11:50:18,963 - root - INFO - Basic application logging configured.
+2025-09-18 11:50:19,016 - src.core.adk_monitoring.telemetry_setup - INFO - OpenTelemetry configured with Cloud Trace Exporter.
+2025-09-18 11:50:23,974 - src.core.managers.database_manager - INFO - Firebase Admin SDK initialized successfully.
+2025-09-18 11:50:24,017 - src.core.managers.database_manager - INFO - Successfully connected to Firestore.
+2025-09-18 11:50:27,004 - src.core.adk_monitoring.service - INFO - ADKMonitoringService initialized.
+2025-09-18 11:50:27,004 - src.core.services.firestore_session_service - INFO - FirestoreSessionService initialized for collection: 'adk_sessions'
+2025-09-18 11:50:27,005 - src.core.managers.cache_manager - WARNING - Could not connect to Redis at localhost:6379. Caching will be disabled. Error: Error 111 connecting to localhost:6379. Connection refused.
+2025-09-18 11:50:27,005 - src.components.casefile.service - INFO - CasefileService initialized.
+2025-09-18 11:50:27,006 - src.core.adk_monitoring.logging_plugin - INFO - LoggingPlugin initialized.
+2025-09-18 11:50:27,048 - opentelemetry.trace - WARNING - Overriding of current TracerProvider is not allowed
+2025-09-18 11:50:27,049 - src.core.adk_monitoring.opentelemetry_plugin - INFO - OpenTelemetry tracing enabled for project: mailmind-ai-djbuw
+2025-09-18 11:50:27,049 - src.core.adk_monitoring.opentelemetry_plugin - INFO - OpenTelemetryMonitoringPlugin initialized.
+2025-09-18 11:50:27,049 - src.core.adk_monitoring.authorization_plugin - INFO - AuthorizationPlugin initialized.
+2025-09-18 11:50:27,049 - src.core.adk_monitoring.dynamic_context_plugin - INFO - DynamicContextPlugin initialized.
+2025-09-18 11:50:27,049 - src.core.adk_monitoring.cost_tracking_plugin - INFO - CostTrackingPlugin initialized.
+2025-09-18 11:50:27,050 - src.core.adk_monitoring.sanitization_plugin - INFO - SanitizationPlugin initialized.
+2025-09-18 11:50:27,050 - src.components.communication.service - INFO - CommunicationService initialized.
+2025-09-18 11:50:27,091 - src.components.toolsets.google_workspace.base_service - INFO - Application Default Credentials not found or invalid. Falling back to OAuth flow.
+2025-09-18 11:50:27,092 - src.components.toolsets.google_workspace.base_service - INFO - Attempting authentication using local OAuth 2.0 flow (token.json / client_secrets.json).
+2025-09-18 11:50:27,094 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-09-18 11:50:27,096 - src.components.toolsets.google_workspace.base_service - INFO - Successfully built service: drive vv3
+2025-09-18 11:50:27,137 - src.components.toolsets.google_workspace.base_service - INFO - Application Default Credentials not found or invalid. Falling back to OAuth flow.
+2025-09-18 11:50:27,138 - src.components.toolsets.google_workspace.base_service - INFO - Attempting authentication using local OAuth 2.0 flow (token.json / client_secrets.json).
+2025-09-18 11:50:27,138 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-09-18 11:50:27,141 - src.components.toolsets.google_workspace.base_service - INFO - Successfully built service: gmail vv1
+2025-09-18 11:50:27,183 - src.components.toolsets.google_workspace.base_service - INFO - Application Default Credentials not found or invalid. Falling back to OAuth flow.
+2025-09-18 11:50:27,183 - src.components.toolsets.google_workspace.base_service - INFO - Attempting authentication using local OAuth 2.0 flow (token.json / client_secrets.json).
+2025-09-18 11:50:27,184 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-09-18 11:50:27,185 - src.components.toolsets.google_workspace.base_service - INFO - Successfully built service: calendar vv3
+2025-09-18 11:50:27,227 - src.components.toolsets.google_workspace.base_service - INFO - Application Default Credentials not found or invalid. Falling back to OAuth flow.
+2025-09-18 11:50:27,227 - src.components.toolsets.google_workspace.base_service - INFO - Attempting authentication using local OAuth 2.0 flow (token.json / client_secrets.json).
+2025-09-18 11:50:27,228 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-09-18 11:50:27,229 - src.components.toolsets.google_workspace.base_service - INFO - Successfully built service: people vv1
+2025-09-18 11:50:27,229 - src.components.agents.chat_agent - INFO - ChatAgent (LlmAgent) initialized.
+2025-09-18 11:50:27,321 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-18 11:50:27,322 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'LoggingPlugin' registered.
+2025-09-18 11:50:27,322 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'OpenTelemetryMonitoringPlugin' registered.
+2025-09-18 11:50:27,322 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'AuthorizationPlugin' registered.
+2025-09-18 11:50:27,322 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'DynamicContextPlugin' registered.
+2025-09-18 11:50:27,323 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'CostTrackingPlugin' registered.
+2025-09-18 11:50:27,323 - google_adk.google.adk.plugins.plugin_manager - INFO - Plugin 'SanitizationPlugin' registered.
+2025-09-18 11:50:27,351 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-18 11:50:27,401 - src.core.managers.database_manager - INFO - Document 'chat-Sam-case-d26ab66b58' saved in collection 'adk_sessions'.
+2025-09-18 11:50:27,401 - src.core.adk_monitoring.service - INFO - ADK_MONITORING_EVENT: session_interaction
+2025-09-18 11:50:27,433 - src.core.managers.prompt_manager - WARNING - Prompt template 'ChatAgent-chat' not found in Firestore. Falling back to local file.
+2025-09-18 11:50:27,434 - src.core.managers.prompt_manager - INFO - Loaded prompt for 'ChatAgent-chat' from file.
+2025-09-18 11:50:27,441 - src.components.communication.api - ERROR - Error handling chat request: 1 validation error for FunctionDeclaration
+returns
+  Extra inputs are not permitted [type=extra_forbidden, input_value=Schema(
+  items=Schema(
+ ...=<Type.ARRAY: 'ARRAY'>
+), input_type=Schema]
+    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden
+Traceback (most recent call last):
+  File "/workspaces/mds-objects/src/components/communication/api.py", line 21, in handle_chat
+    response_data = await comm_service.handle_user_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/communication/service.py", line 98, in handle_user_request
+    async for event in runner.run_async(user_id=current_user.username, session_id=session.id, new_message=new_message):
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 244, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 288, in _exec_with_plugin
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/runners.py", line 238, in execute
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 248, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/base_agent.py", line 238, in _run_with_trace
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 288, in _run_async_impl
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 401, in run_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 420, in _run_one_step_async
+    async for event in agen:
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 483, in _preprocess_async
+    tools = await _convert_tool_union_to_tools(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/agents/llm_agent.py", line 121, in _convert_tool_union_to_tools
+    return await tool_union.get_tools_with_prefix(ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/google/adk/tools/base_toolset.py", line 114, in get_tools_with_prefix
+    tools = await self.get_tools(readonly_context)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/mds-objects/src/components/toolsets/casefile_toolset.py", line 177, in get_tools
+    declaration=adk_types.FunctionDeclaration(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/pydantic/main.py", line 253, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for FunctionDeclaration
+returns
+  Extra inputs are not permitted [type=extra_forbidden, input_value=Schema(
+  items=Schema(
+ ...=<Type.ARRAY: 'ARRAY'>
+), input_type=Schema]
+    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden

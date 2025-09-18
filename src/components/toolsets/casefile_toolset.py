@@ -119,36 +119,54 @@ class CasefileToolset(BaseToolset):
         )
         return updated_casefile.model_dump() if updated_casefile else None
 
-    def get_tools(self) -> list[BaseTool]:
+    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """Returns a list of all the tool methods in this toolset."""
         casefile_schema = adk_types.Schema(
-            type=adk_types.SchemaType.OBJECT,
+            type=adk_types.Type.OBJECT,
+            description="The central, all-encompassing dossier-object for the MDS platform.",
             properties={
-                "id": adk_types.Schema(type=adk_types.SchemaType.STRING),
-                "name": adk_types.Schema(type=adk_types.SchemaType.STRING),
-                "description": adk_types.Schema(type=adk_types.SchemaType.STRING),
-                "created_at": adk_types.Schema(type=adk_types.SchemaType.STRING),
-                "modified_at": adk_types.Schema(type=adk_types.SchemaType.STRING),
-                "owner_id": adk_types.Schema(type=adk_types.SchemaType.STRING),
+                "id": adk_types.Schema(type=adk_types.Type.STRING, description="The unique ID of the casefile."),
+                "name": adk_types.Schema(type=adk_types.Type.STRING, description="The name of the casefile."),
+                "description": adk_types.Schema(type=adk_types.Type.STRING, description="A description of the casefile."),
+                "casefile_type": adk_types.Schema(type=adk_types.Type.STRING, description="The type of casefile (e.g., 'research')."),
+                "created_at": adk_types.Schema(type=adk_types.Type.STRING, description="The creation timestamp in ISO 8601 format."),
+                "modified_at": adk_types.Schema(type=adk_types.Type.STRING, description="The last modification timestamp in ISO 8601 format."),
+                "owner_id": adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the user who owns the casefile."),
                 "acl": adk_types.Schema(
-                    type=adk_types.SchemaType.OBJECT,
-                    additional_properties=adk_types.Schema(type=adk_types.SchemaType.STRING),
+                    type=adk_types.Type.OBJECT,
+                    description="Access Control List. A dictionary mapping user IDs to their roles (e.g., 'admin', 'writer', 'reader').",
+                    additional_properties=adk_types.Schema(type=adk_types.Type.STRING),
                 ),
                 "tags": adk_types.Schema(
-                    type=adk_types.SchemaType.ARRAY,
-                    items=adk_types.Schema(type=adk_types.SchemaType.STRING),
+                    type=adk_types.Type.ARRAY,
+                    items=adk_types.Schema(type=adk_types.Type.STRING),
+                    description="A list of tags for categorization."
                 ),
+                "sub_casefile_ids": adk_types.Schema(
+                    type=adk_types.Type.ARRAY,
+                    items=adk_types.Schema(type=adk_types.Type.STRING),
+                    description="A list of IDs of nested sub-casefiles."
+                ),
+                "parent_id": adk_types.Schema(type=adk_types.Type.STRING, description="The ID of the parent casefile, if this is a sub-casefile."),
+                "session_ids": adk_types.Schema(
+                    type=adk_types.Type.ARRAY,
+                    items=adk_types.Schema(type=adk_types.Type.STRING),
+                    description="A list of IDs of associated ADK Session instances."
+                ),
+                "drive_files_count": adk_types.Schema(type=adk_types.Type.INTEGER, description="The number of associated Google Drive files."),
+                "gmail_messages_count": adk_types.Schema(type=adk_types.Type.INTEGER, description="The number of associated Gmail messages."),
+                "calendar_events_count": adk_types.Schema(type=adk_types.Type.INTEGER, description="The number of associated Google Calendar events."),
             },
         )
 
         update_casefile_schema = adk_types.Schema(
-            type=adk_types.SchemaType.OBJECT,
+            type=adk_types.Type.OBJECT,
             properties={
-                "name": adk_types.Schema(type=adk_types.SchemaType.STRING),
-                "description": adk_types.Schema(type=adk_types.SchemaType.STRING),
+                "name": adk_types.Schema(type=adk_types.Type.STRING),
+                "description": adk_types.Schema(type=adk_types.Type.STRING),
                 "tags": adk_types.Schema(
-                    type=adk_types.SchemaType.ARRAY,
-                    items=adk_types.Schema(type=adk_types.SchemaType.STRING),
+                    type=adk_types.Type.ARRAY,
+                    items=adk_types.Schema(type=adk_types.Type.STRING),
                 ),
             },
         )
@@ -160,19 +178,19 @@ class CasefileToolset(BaseToolset):
                     name="list_all_casefiles",
                     description="Lists all available casefiles, returning a list of their names and IDs.",
                     parameters=adk_types.Schema(
-                        type=adk_types.SchemaType.OBJECT, properties={}
+                        type=adk_types.Type.OBJECT, properties={}
                     ),
                     returns=adk_types.Schema(
-                        type=adk_types.SchemaType.ARRAY,
+                        type=adk_types.Type.ARRAY,
                         items=adk_types.Schema(
-                            type=adk_types.SchemaType.OBJECT,
+                            type=adk_types.Type.OBJECT,
                             properties={
-                                "id": adk_types.Schema(type=adk_types.SchemaType.STRING),
-                                "name": adk_types.Schema(type=adk_types.SchemaType.STRING),
+                                "id": adk_types.Schema(type=adk_types.Type.STRING),
+                                "name": adk_types.Schema(type=adk_types.Type.STRING),
                             },
-                        ),
-                    ),
-                ),
+                        )
+                    )
+                )
             ),
             FunctionTool(
                 func=self._create_casefile,
@@ -180,14 +198,14 @@ class CasefileToolset(BaseToolset):
                     name="create_casefile",
                     description="Creates a new casefile and returns the created casefile object.",
                     parameters=adk_types.Schema(
-                        type=adk_types.SchemaType.OBJECT,
+                        type=adk_types.Type.OBJECT,
                         properties={
                             "name": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The name of the new casefile.",
                             ),
                             "description": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="A brief description of the new casefile.",
                             ),
                         },
@@ -202,16 +220,16 @@ class CasefileToolset(BaseToolset):
                     name="delete_casefile",
                     description="Deletes a casefile by its ID. Returns True on success, False on failure.",
                     parameters=adk_types.Schema(
-                        type=adk_types.SchemaType.OBJECT,
+                        type=adk_types.Type.OBJECT,
                         properties={
                             "casefile_id": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The ID of the casefile to delete.",
                             )
                         },
                         required=["casefile_id"],
                     ),
-                    returns=adk_types.Schema(type=adk_types.SchemaType.BOOLEAN),
+                    returns=adk_types.Schema(type=adk_types.Type.BOOLEAN),
                 ),
             ),
             FunctionTool(
@@ -220,10 +238,10 @@ class CasefileToolset(BaseToolset):
                     name="get_casefile",
                     description="Retrieves a single casefile by its ID.",
                     parameters=adk_types.Schema(
-                        type=adk_types.SchemaType.OBJECT,
+                        type=adk_types.Type.OBJECT,
                         properties={
                             "casefile_id": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The ID of the casefile to retrieve.",
                             )
                         },
@@ -238,10 +256,10 @@ class CasefileToolset(BaseToolset):
                     name="update_casefile",
                     description="Updates an existing casefile with new data.",
                     parameters=adk_types.Schema(
-                        type=adk_types.SchemaType.OBJECT,
+                        type=adk_types.Type.OBJECT,
                         properties={
                             "casefile_id": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The ID of the casefile to update.",
                             ),
                             "updates": update_casefile_schema,
@@ -257,18 +275,18 @@ class CasefileToolset(BaseToolset):
                     name="grant_access",
                     description="Grants a user a specific role on a casefile.",
                     parameters=adk_types.Schema(
-                        type=adk_types.SchemaType.OBJECT,
+                        type=adk_types.Type.OBJECT,
                         properties={
                             "casefile_id": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The ID of the casefile.",
                             ),
                             "user_id_to_grant": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The ID of the user to grant access to.",
                             ),
                             "role": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The role to assign (e.g., 'reader', 'writer', 'admin').",
                             ),
                         },
@@ -283,14 +301,14 @@ class CasefileToolset(BaseToolset):
                     name="revoke_access",
                     description="Revokes a user's access to a casefile.",
                     parameters=adk_types.Schema(
-                        type=adk_types.SchemaType.OBJECT,
+                        type=adk_types.Type.OBJECT,
                         properties={
                             "casefile_id": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The ID of the casefile.",
                             ),
                             "user_id_to_revoke": adk_types.Schema(
-                                type=adk_types.SchemaType.STRING,
+                                type=adk_types.Type.STRING,
                                 description="The ID of the user whose access is to be revoked.",
                             ),
                         },

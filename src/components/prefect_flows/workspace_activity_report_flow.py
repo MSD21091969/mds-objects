@@ -7,7 +7,7 @@ from datetime import timedelta, datetime, timezone
 from typing import Dict, Optional
 
 # Dependency Getters
-from MDSAPP.core.dependencies import get_state_manager
+from src.core.dependencies import get_state_manager
 
 # Import shared tasks
 from .shared_tasks import (
@@ -140,9 +140,9 @@ if __name__ == "__main__":
     else:
         print("Warning: .env file not found.")
 
-    from MDSAPP.core.dependencies import get_database_manager
-    from MDSAPP.core.models.user import UserInDB, UserRole
-    from MDSAPP.core.security import get_password_hash
+    from src.core.dependencies import get_database_manager
+    from src.core.models.user import UserInDB, UserRole
+    from src.core.security import get_password_hash
 
     test_params = WorkspaceActivityFlowParameters(user_id="local_test_user")
 

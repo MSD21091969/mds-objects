@@ -6,9 +6,9 @@ import sys
 from dotenv import load_dotenv
 
 # Add the project root to the Python path to allow for absolute imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from MDSAPP.core.managers.state_manager import StateManager
+from src.components.prefect_flows.state_manager import StateManager
 
 # Basic logging setup
 logging.basicConfig(level=logging.INFO)
@@ -19,8 +19,8 @@ async def get_and_print_watermarks():
     """
     print("--- Fetching Watermarks from Firestore ---")
     try:
-        # Load environment variables from .env file for local execution
-        dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+        # Load environment variables from the project root .env file
+        dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
         load_dotenv(dotenv_path=dotenv_path)
         
         state_manager = StateManager()

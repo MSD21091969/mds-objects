@@ -102,9 +102,9 @@ if __name__ == "__main__":
     else:
         print("Warning: .env file not found.")
 
-    from MDSAPP.core.dependencies import get_database_manager
-    from MDSAPP.core.models.user import UserInDB, UserRole
-    from MDSAPP.core.security import get_password_hash
+    from src.core.dependencies import get_database_manager
+    from src.core.models.user import UserInDB, UserRole
+    from src.core.security import get_password_hash
 
     start_date_test = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
     

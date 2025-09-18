@@ -1,9 +1,12 @@
 import logging
 import firebase_admin
 from firebase_admin import credentials, firestore
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 import asyncio
 import os
+
+from src.components.casefile.models import Casefile
+from src.core.models.user import UserInDB
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,8 @@ class DatabaseManager:
     """
     def __init__(self):
         self._db = None
+        self.users_collection_name = "users"
+        self.casefiles_collection_name = "casefiles"
         self._connect()
 
     def _connect(self):
@@ -69,3 +74,35 @@ class DatabaseManager:
             logger.info(f"Document '{doc_id}' deleted from collection '{collection}'.")
             return True
         return False
+
+    async def save_casefile(self, casefile: Casefile) -> None:
+        """Saves a Casefile Pydantic model to the casefiles collection."""
+        await self.save(
+            self.casefiles_collection_name,
+            casefile.id,
+            casefile.model_dump(exclude_none=True)
+        )
+
+    async def delete_casefile(self, casefile_id: str) -> bool:
+        """Deletes a casefile document from the casefiles collection."""
+        return await self.delete(self.casefiles_collection_name, casefile_id)
+
+    async def load_casefile(self, casefile_id: str) -> Optional[Casefile]:
+        """
+        Loads a specific casefile document from Firestore and converts it
+        into a Casefile Pydantic model.
+        """
+        casefile_data = await self.get(self.casefiles_collection_name, casefile_id)
+        if casefile_data:
+            return Casefile(**casefile_data)
+        return None
+
+    async def get_user_by_username(self, username: str) -> Optional[UserInDB]:
+        """
+        Loads a specific user document from Firestore and converts it
+        into a UserInDB Pydantic model.
+        """
+        user_data = await self.get(self.users_collection_name, username)
+        if user_data:
+            return UserInDB(**user_data)
+        return None

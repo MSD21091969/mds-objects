@@ -2,6 +2,7 @@ import logging
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
+from google.adk.tools import ToolContext
 from google.genai import types as adk_types
 
 from src.components.toolsets.web_search.models import WebSearchRequest
@@ -22,23 +23,23 @@ class WebSearchToolset(BaseToolset):
         response = self.web_search_service.search(request)
         return "\n".join(response.results)
 
-    def get_tools(self) -> list[BaseTool]:
+    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """Returns a list of all the tool methods in this toolset."""
         search_declaration = adk_types.FunctionDeclaration(
             name="search",
             description="Searches the web for a given query.",
             parameters=adk_types.Schema(
-                type=adk_types.SchemaType.OBJECT,
+                type=adk_types.Type.OBJECT,
                 properties={
                     "query": adk_types.Schema(
-                        type=adk_types.SchemaType.STRING,
+                        type=adk_types.Type.STRING,
                         description="The query to search the web for.",
                     ),
                 },
                 required=["query"],
             ),
             returns=adk_types.Schema(
-                type=adk_types.SchemaType.STRING,
+                type=adk_types.Type.STRING,
                 description="A string containing the search results.",
             ),
         )
