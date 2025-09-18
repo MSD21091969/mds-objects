@@ -155,50 +155,35 @@ def get_web_search_service() -> WebSearchService:
 @lru_cache(maxsize=None)
 def get_google_drive_service() -> GoogleDriveService:
     logger.debug("Creating singleton instance of GoogleDriveService")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GoogleDriveService(client_secrets_path=client_secrets_path)
+    # De service heeft alleen de db_manager nodig voor user-centric auth.
+    return GoogleDriveService(db_manager=get_database_manager())
 
 @lru_cache(maxsize=None)
 def get_google_gmail_service() -> GoogleGmailService:
     logger.debug("Creating singleton instance of GoogleGmailService")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GoogleGmailService(client_secrets_path=client_secrets_path)
+    return GoogleGmailService(db_manager=get_database_manager())
 
 @lru_cache(maxsize=None)
 def get_google_sheets_service() -> GoogleSheetsService:
     logger.debug("Creating singleton instance of GoogleSheetsService")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GoogleSheetsService(client_secrets_path=client_secrets_path)
+    return GoogleSheetsService(db_manager=get_database_manager())
 
 @lru_cache(maxsize=None)
 def get_google_calendar_service() -> GoogleCalendarService:
     logger.debug("Creating singleton instance of GoogleCalendarService")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GoogleCalendarService(client_secrets_path=client_secrets_path)
+    # De constructor van GoogleCalendarService is al correct in de context,
+    # maar we passen het hier aan voor consistentie met de andere services.
+    return GoogleCalendarService(db_manager=get_database_manager())
 
 @lru_cache(maxsize=None)
 def get_google_people_service() -> GooglePeopleService:
     logger.debug("Creating singleton instance of GooglePeopleService")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GooglePeopleService(client_secrets_path=client_secrets_path)
+    return GooglePeopleService(db_manager=get_database_manager())
 
 @lru_cache(maxsize=None)
 def get_google_docs_service() -> GoogleDocsService:
     logger.debug("Creating singleton instance of GoogleDocsService")
-    client_secrets_path = os.path.join(os.getcwd(), "client_secrets.json")
-    if not os.path.exists(client_secrets_path):
-        raise FileNotFoundError(f"client_secrets.json not found at {client_secrets_path}")
-    return GoogleDocsService(client_secrets_path=client_secrets_path)
+    return GoogleDocsService(db_manager=get_database_manager())
 
 
 # --- Toolset Getters ---
@@ -268,6 +253,7 @@ def get_chat_agent() -> ChatAgent:
             get_google_calendar_toolset(),
             get_google_people_toolset(),
             get_google_docs_toolset(),
+            get_google_sheets_toolset(),
         ]
     )
 

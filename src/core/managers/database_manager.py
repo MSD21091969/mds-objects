@@ -5,8 +5,8 @@ from typing import Any, List, Optional, Dict
 import asyncio
 import os
 
-from src.components.casefile.models import Casefile
 from src.core.models.user import UserInDB
+from src.components.casefile.models import Casefile
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +20,17 @@ class DatabaseManager:
         self.users_collection_name = "users"
         self.casefiles_collection_name = "casefiles"
         self._connect()
-
+    
     def _connect(self):
         """
         Initializes the connection to the Firestore database using the
         application's default credentials.
         """
         try:
+            # Check if the default app is already initialized
             if not firebase_admin._apps:
+                # GOOGLE_CLOUD_PROJECT is the standard env var for the project ID.
+                project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "mds-objects")
                 cred = credentials.ApplicationDefault()
                 firebase_admin.initialize_app(cred)
                 logger.info("Firebase Admin SDK initialized successfully.")
@@ -35,7 +38,7 @@ class DatabaseManager:
             self._db = firestore.client(database_id='mds-objects')
             logger.info("Successfully connected to Firestore.")
         except Exception as e:
-            logger.critical(f"Failed to connect to Firestore: {e}", exc_info=True)
+            logger.critical(f"Failed to initialize Firebase or connect to Firestore: {e}", exc_info=True)
             raise
 
     @property
@@ -75,7 +78,7 @@ class DatabaseManager:
             return True
         return False
 
-    async def save_casefile(self, casefile: Casefile) -> None:
+    async def save_casefile(self, casefile: "Casefile") -> None:
         """Saves a Casefile Pydantic model to the casefiles collection."""
         await self.save(
             self.casefiles_collection_name,
@@ -87,7 +90,7 @@ class DatabaseManager:
         """Deletes a casefile document from the casefiles collection."""
         return await self.delete(self.casefiles_collection_name, casefile_id)
 
-    async def load_casefile(self, casefile_id: str) -> Optional[Casefile]:
+    async def load_casefile(self, casefile_id: str) -> Optional["Casefile"]:
         """
         Loads a specific casefile document from Firestore and converts it
         into a Casefile Pydantic model.

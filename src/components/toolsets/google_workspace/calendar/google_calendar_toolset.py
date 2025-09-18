@@ -1,13 +1,14 @@
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Optional, List
 from datetime import datetime
 
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
-from google.genai import types as adk_types
+from google.adk.tools import ToolContext
 
 from src.components.toolsets.google_workspace.calendar.service import GoogleCalendarService
+from src.components.toolsets.google_workspace.calendar.models import GoogleCalendarEvent
 
 logger = logging.getLogger(__name__)
 
@@ -21,15 +22,22 @@ class GoogleCalendarToolset(BaseToolset):
         super().__init__()
         self.calendar_service = calendar_service
 
-    async def _list_events(
+    async def list_events(
         self,
+        tool_context: ToolContext,
         calendar_id: str = "primary",
         time_min: Optional[str] = None,
         time_max: Optional[str] = None,
         max_results: int = 10,
-    ) -> List[Dict[str, Any]]:
+    ) -> List[GoogleCalendarEvent]:
         """
         Lists events from a Google Calendar. Dates must be in ISO 8601 format.
+        Args:
+            tool_context: The runtime context provided by the ADK.
+            calendar_id: The ID of the calendar to list events from. Defaults to 'primary'.
+            time_min: The start of the time range to query, in ISO 8601 format.
+            time_max: The end of the time range to query, in ISO 8601 format.
+            max_results: The maximum number of events to return.
         """
         logger.info(
             f"Toolset is calling calendar_service.list_events for calendar ID: {calendar_id}"
@@ -41,16 +49,16 @@ class GoogleCalendarToolset(BaseToolset):
         except ValueError as e:
             raise ValueError(f"Invalid ISO 8601 date format provided. {e}") from e
 
-        events = self.calendar_service.list_events(
+        return await self.calendar_service.list_events(
             calendar_id=calendar_id,
             time_min=time_min_dt,
             time_max=time_max_dt,
             max_results=max_results,
         )
-        return [event.model_dump() for event in events]
 
-    async def _create_event(
+    async def create_event(
         self,
+        tool_context: ToolContext,
         summary: str,
         start_time: str,
         end_time: str,
@@ -58,9 +66,18 @@ class GoogleCalendarToolset(BaseToolset):
         description: Optional[str] = None,
         attendees: Optional[List[str]] = None,
         location: Optional[str] = None,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[GoogleCalendarEvent]:
         """
         Creates a new event in a Google Calendar. Dates must be in ISO 8601 format.
+        Args:
+            tool_context: The runtime context provided by the ADK.
+            summary: The title of the event.
+            start_time: The start time of the event in ISO 8601 format.
+            end_time: The end time of the event in ISO 8601 format.
+            calendar_id: The ID of the calendar to create the event in. Defaults to 'primary'.
+            description: A description of the event.
+            attendees: A list of email addresses of attendees.
+            location: The location of the event.
         """
         logger.info(
             f"Toolset is calling calendar_service.create_event for calendar ID: {calendar_id}, summary: {summary}"
@@ -72,7 +89,7 @@ class GoogleCalendarToolset(BaseToolset):
         except ValueError as e:
             raise ValueError(f"Invalid ISO 8601 date format provided. {e}") from e
 
-        event = self.calendar_service.create_event(
+        return await self.calendar_service.create_event(
             summary=summary,
             start_time=start_time_dt,
             end_time=end_time_dt,
@@ -81,24 +98,27 @@ class GoogleCalendarToolset(BaseToolset):
             attendees=attendees,
             location=location,
         )
-        return event.model_dump() if event else None
 
-    async def _get_event(
-        self, event_id: str, calendar_id: str = "primary"
-    ) -> Optional[Dict[str, Any]]:
+    async def get_event(
+        self, tool_context: ToolContext, event_id: str, calendar_id: str = "primary"
+    ) -> Optional[GoogleCalendarEvent]:
         """
         Gets a single event from a Google Calendar by its ID.
+        Args:
+            tool_context: The runtime context provided by the ADK.
+            event_id: The ID of the event to retrieve.
+            calendar_id: The ID of the calendar the event belongs to. Defaults to 'primary'.
         """
         logger.info(
             f"Toolset is calling calendar_service.get_event for calendar ID: {calendar_id}, event ID: {event_id}"
         )
-        event = self.calendar_service.get_event(
+        return await self.calendar_service.get_event(
             calendar_id=calendar_id, event_id=event_id
         )
-        return event.model_dump() if event else None
 
-    async def _update_event(
+    async def update_event(
         self,
+        tool_context: ToolContext,
         event_id: str,
         calendar_id: str = "primary",
         summary: Optional[str] = None,
@@ -107,9 +127,19 @@ class GoogleCalendarToolset(BaseToolset):
         end_time: Optional[str] = None,
         attendees: Optional[List[str]] = None,
         location: Optional[str] = None,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[GoogleCalendarEvent]:
         """
         Updates an existing event in a Google Calendar. Dates must be in ISO 8601 format.
+        Args:
+            tool_context: The runtime context provided by the ADK.
+            event_id: The ID of the event to update.
+            calendar_id: The ID of the calendar the event belongs to. Defaults to 'primary'.
+            summary: The new title for the event.
+            description: The new description for the event.
+            start_time: The new start time in ISO 8601 format.
+            end_time: The new end time in ISO 8601 format.
+            attendees: A new list of attendee email addresses.
+            location: The new location for the event.
         """
         logger.info(
             f"Toolset is calling calendar_service.update_event for calendar ID: {calendar_id}, event ID: {event_id}"
@@ -121,7 +151,7 @@ class GoogleCalendarToolset(BaseToolset):
         except ValueError as e:
             raise ValueError(f"Invalid ISO 8601 date format provided. {e}") from e
 
-        event = self.calendar_service.update_event(
+        return await self.calendar_service.update_event(
             event_id=event_id,
             calendar_id=calendar_id,
             summary=summary,
@@ -131,209 +161,31 @@ class GoogleCalendarToolset(BaseToolset):
             attendees=attendees,
             location=location,
         )
-        return event.model_dump() if event else None
 
-    async def _delete_event(self, event_id: str, calendar_id: str = "primary") -> None:
+    async def delete_event(
+        self, tool_context: ToolContext, event_id: str, calendar_id: str = "primary"
+    ) -> bool:
         """
-        Deletes an event from a Google Calendar.
+        Deletes an event from a Google Calendar. Returns True on success.
+        Args:
+            tool_context: The runtime context provided by the ADK.
+            event_id: The ID of the event to delete.
+            calendar_id: The ID of the calendar the event belongs to. Defaults to 'primary'.
         """
         logger.info(
             f"Toolset is calling calendar_service.delete_event for calendar ID: {calendar_id}, event ID: {event_id}"
         )
-        self.calendar_service.delete_event(calendar_id=calendar_id, event_id=event_id)
+        await self.calendar_service.delete_event(calendar_id=calendar_id, event_id=event_id)
+        return True
 
-    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
+    async def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """
         Returns a list of tools provided by this toolset.
         """
-        event_schema = {
-            "type": adk_types.Type.OBJECT,
-            "properties": {
-                "id": {"type": adk_types.Type.STRING},
-                "status": {"type": adk_types.Type.STRING},
-                "summary": {"type": adk_types.Type.STRING},
-                "description": {"type": adk_types.Type.STRING},
-                "location": {"type": adk_types.Type.STRING},
-                "start": {
-                    "type": adk_types.Type.OBJECT,
-                    "properties": {
-                        "dateTime": {"type": adk_types.Type.STRING},
-                        "timeZone": {"type": adk_types.Type.STRING},
-                    },
-                },
-                "end": {
-                    "type": adk_types.Type.OBJECT,
-                    "properties": {
-                        "dateTime": {"type": adk_types.Type.STRING},
-                        "timeZone": {"type": adk_types.Type.STRING},
-                    },
-                },
-                "attendees": {
-                    "type": adk_types.Type.ARRAY,
-                    "items": {
-                        "type": adk_types.Type.OBJECT,
-                        "properties": {
-                            "email": {"type": adk_types.Type.STRING},
-                            "displayName": {
-                                "type": adk_types.Type.STRING
-                            },
-                            "responseStatus": {
-                                "type": adk_types.Type.STRING
-                            },
-                        },
-                    },
-                },
-            },
-        }
-
-        list_events_declaration = adk_types.FunctionDeclaration(
-            name="list_calendar_events",
-            description="Lists events from a Google Calendar. Dates must be in ISO 8601 format.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    "calendar_id": {
-                        "type": adk_types.Type.STRING,
-                        "description": "Calendar identifier. Default is 'primary'.",
-                    },
-                    "time_min": {
-                        "type": adk_types.Type.STRING,
-                        "description": "Start time in ISO 8601 format, e.g., '2023-10-26T10:00:00Z'.",
-                    },
-                    "time_max": {
-                        "type": adk_types.Type.STRING,
-                        "description": "End time in ISO 8601 format, e.g., '2023-10-26T12:00:00Z'.",
-                    },
-                    "max_results": {
-                        "type": adk_types.Type.INTEGER, "description": "Maximum number of events to return."
-                    },
-                },
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.ARRAY, "items": event_schema}),
-        )
-
-        create_event_declaration = adk_types.FunctionDeclaration(
-            name="create_calendar_event",
-            description="Creates a new event in a Google Calendar. Dates must be in ISO 8601 format.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    "summary": {
-                        "type": adk_types.Type.STRING, "description": "Title of the event."
-                    },
-                    "start_time": {
-                        "type": adk_types.Type.STRING,
-                        "description": "Start time in ISO 8601 format, e.g., '2023-10-26T10:00:00Z'.",
-                    },
-                    "end_time": {
-                        "type": adk_types.Type.STRING,
-                        "description": "End time in ISO 8601 format, e.g., '2023-10-26T12:00:00Z'.",
-                    },
-                    "calendar_id": {
-                        "type": adk_types.Type.STRING,
-                        "description": "Calendar identifier. Default is 'primary'.",
-                    },
-                    "description": {
-                        "type": adk_types.Type.STRING, "description": "Description of the event."
-                    },
-                    "attendees": {
-                        "type": adk_types.Type.ARRAY,
-                        "items": {"type": adk_types.Type.STRING},
-                        "description": "List of attendee email addresses.",
-                    },
-                    "location": {
-                        "type": adk_types.Type.STRING, "description": "Location of the event."
-                    },
-                },
-                required=["summary", "start_time", "end_time"],
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**event_schema),
-        )
-
-        get_event_declaration = adk_types.FunctionDeclaration(
-            name="get_calendar_event",
-            description="Gets a single event from a Google Calendar by its ID.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    "event_id": {
-                        "type": adk_types.Type.STRING, "description": "ID of the event to retrieve."
-                    },
-                    "calendar_id": {
-                        "type": adk_types.Type.STRING,
-                        "description": "Calendar identifier. Default is 'primary'.",
-                    },
-                },
-                required=["event_id"],
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**event_schema),
-        )
-
-        update_event_declaration = adk_types.FunctionDeclaration(
-            name="update_calendar_event",
-            description="Updates an existing event in a Google Calendar. Dates must be in ISO 8601 format.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    "event_id": {
-                        "type": adk_types.Type.STRING, "description": "ID of the event to update."
-                    },
-                    "calendar_id": {
-                        "type": adk_types.Type.STRING,
-                        "description": "Calendar identifier. Default is 'primary'.",
-                    },
-                    "summary": {
-                        "type": adk_types.Type.STRING, "description": "New title for the event."
-                    },
-                    "description": {
-                        "type": adk_types.Type.STRING,
-                        "description": "New description for the event.",
-                    },
-                    "start_time": {
-                        "type": adk_types.Type.STRING,
-                        "description": "New start time in ISO 8601 format.",
-                    },
-                    "end_time": {
-                        "type": adk_types.Type.STRING,
-                        "description": "New end time in ISO 8601 format.",
-                    },
-                    "attendees": {
-                        "type": adk_types.Type.ARRAY,
-                        "items": {"type": adk_types.Type.STRING},
-                        "description": "New list of attendee email addresses.",
-                    },
-                    "location": {
-                        "type": adk_types.Type.STRING, "description": "New location for the event."
-                    },
-                },
-                required=["event_id"],
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**event_schema),
-        )
-
-        delete_event_declaration = adk_types.FunctionDeclaration(
-            name="delete_calendar_event",
-            description="Deletes an event from a Google Calendar.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    "event_id": {
-                        "type": adk_types.Type.STRING, "description": "ID of the event to delete."
-                    },
-                    "calendar_id": {
-                        "type": adk_types.Type.STRING,
-                        "description": "Calendar identifier. Default is 'primary'.",
-                    },
-                },
-                required=["event_id"],
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
-        )
-
         return [
-            FunctionTool(func=self._list_events, declaration=list_events_declaration),
-            FunctionTool(func=self._create_event, declaration=create_event_declaration),
-            FunctionTool(func=self._get_event, declaration=get_event_declaration),
-            FunctionTool(func=self._update_event, declaration=update_event_declaration),
-            FunctionTool(func=self._delete_event, declaration=delete_event_declaration),
+            FunctionTool(func=self.list_events),
+            FunctionTool(func=self.create_event),
+            FunctionTool(func=self.get_event),
+            FunctionTool(func=self.update_event),
+            FunctionTool(func=self.delete_event),
         ]

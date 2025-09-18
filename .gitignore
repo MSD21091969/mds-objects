@@ -76,4 +76,4 @@ htmlcov/
 docs/
 y/
 output.log
-pytest.ini
+pytest.ini__pycache__/

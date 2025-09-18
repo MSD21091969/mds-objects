@@ -1,12 +1,12 @@
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
 from google.adk.tools import ToolContext
-from google.genai import types as adk_types
 
+from src.core.models.user import User
 from src.components.toolsets.google_workspace.sheets.service import GoogleSheetsService
 from src.components.toolsets.google_workspace.sheets.models import GoogleSheet, ValueRange
 
@@ -16,161 +16,117 @@ class GoogleSheetsToolset(BaseToolset):
     """
     A toolset for interacting with Google Sheets.
     """
-    def __init__(self, sheets_service: Optional[GoogleSheetsService] = None):
+    def __init__(self, sheets_service: GoogleSheetsService):
         super().__init__()
-        self.sheets_service = sheets_service
+        self._sheets_service = sheets_service
 
-    def _ensure_service(self):
-        """Checks if the Sheets service is available."""
-        if not self.sheets_service:
-            raise ConnectionError("GoogleSheetsService is not available.")
+    def _get_user_id_from_context(self, tool_context: ToolContext) -> Optional[str]:
+        """Helper to extract user ID from the tool context state."""
+        user_json = tool_context.state.get("current_user")
+        if not user_json:
+            logger.warning("Could not find 'current_user' in tool context state.")
+            return None
+        try:
+            user = User.model_validate_json(user_json)
+            return user.username
+        except Exception as e:
+            logger.error(f"Failed to parse user from tool_context: {e}")
+            return None
 
-    def _create_spreadsheet(self, title: str) -> Optional[Dict[str, Any]]:
+    async def create_spreadsheet(self, title: str, tool_context: ToolContext) -> Union[Dict[str, Any], str]:
         """
         Creates a new Google Spreadsheet.
+        Args:
+            title: The title for the new spreadsheet.
+            tool_context: The runtime context.
         """
-        self._ensure_service()
-        logger.info(f"Toolset is calling sheets_service.create_spreadsheet for title: {title}")
-        spreadsheet = self.sheets_service.create_spreadsheet(title)
-        return spreadsheet.model_dump() if spreadsheet else None
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
 
-    def _get_spreadsheet(self, spreadsheet_id: str) -> Optional[Dict[str, Any]]:
+        logger.info(f"Toolset is calling sheets_service.create_spreadsheet for title: {title}")
+        spreadsheet = await self._sheets_service.create_spreadsheet(user_id=user_id, title=title)
+        if not spreadsheet:
+            return f"Failed to create spreadsheet with title '{title}'."
+        return spreadsheet.model_dump(by_alias=True)
+
+    async def get_spreadsheet(self, spreadsheet_id: str, tool_context: ToolContext) -> Union[Dict[str, Any], str]:
         """
         Gets a Google Spreadsheet by its ID.
+        Args:
+            spreadsheet_id: The ID of the spreadsheet to retrieve.
+            tool_context: The runtime context.
         """
-        self._ensure_service()
-        logger.info(f"Toolset is calling sheets_service.get_spreadsheet for ID: {spreadsheet_id}")
-        spreadsheet = self.sheets_service.get_spreadsheet(spreadsheet_id)
-        return spreadsheet.model_dump() if spreadsheet else None
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
 
-    def _read_range(self, spreadsheet_id: str, range_name: str) -> Optional[Dict[str, Any]]:
+        logger.info(f"Toolset is calling sheets_service.get_spreadsheet for ID: {spreadsheet_id}")
+        spreadsheet = await self._sheets_service.get_spreadsheet(user_id=user_id, spreadsheet_id=spreadsheet_id)
+        if not spreadsheet:
+            return f"Spreadsheet with ID '{spreadsheet_id}' not found or access was denied."
+        return spreadsheet.model_dump(by_alias=True)
+
+    async def read_range(self, spreadsheet_id: str, range_name: str, tool_context: ToolContext) -> Union[Dict[str, Any], str]:
         """
         Reads a range of values from a Google Spreadsheet.
+        Args:
+            spreadsheet_id: The ID of the spreadsheet to read from.
+            range_name: The A1 notation of the range to read (e.g., 'Sheet1!A1:B2').
+            tool_context: The runtime context.
         """
-        self._ensure_service()
-        logger.info(f"Toolset is calling sheets_service.read_range for spreadsheet ID: {spreadsheet_id}, range: {range_name}")
-        value_range = self.sheets_service.read_range(spreadsheet_id, range_name)
-        return value_range.model_dump() if value_range else None
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
 
-    def _write_range(self, spreadsheet_id: str, range_name: str, values: List[List[Any]]) -> Optional[Dict[str, Any]]:
+        logger.info(f"Toolset is calling sheets_service.read_range for spreadsheet ID: {spreadsheet_id}, range: {range_name}")
+        value_range = await self._sheets_service.read_range(user_id=user_id, spreadsheet_id=spreadsheet_id, range_name=range_name)
+        if not value_range:
+            return f"Could not read range '{range_name}' from spreadsheet '{spreadsheet_id}'."
+        return value_range.model_dump()
+
+    async def write_range(self, spreadsheet_id: str, range_name: str, values: List[List[Any]], tool_context: ToolContext) -> Union[Dict[str, Any], str]:
         """
         Writes a range of values to a Google Spreadsheet.
+        Args:
+            spreadsheet_id: The ID of the spreadsheet to write to.
+            range_name: The A1 notation of the range to write (e.g., 'Sheet1!A1').
+            values: A 2D list of values to write.
+            tool_context: The runtime context.
         """
-        self._ensure_service()
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
+
         logger.info(f"Toolset is calling sheets_service.write_range for spreadsheet ID: {spreadsheet_id}, range: {range_name}")
-        return self.sheets_service.write_range(spreadsheet_id, range_name, values)
+        result = await self._sheets_service.write_range(user_id=user_id, spreadsheet_id=spreadsheet_id, range_name=range_name, values=values)
+        if not result:
+            return f"Failed to write to range '{range_name}' in spreadsheet '{spreadsheet_id}'."
+        return result
 
-    def _delete_spreadsheet(self, spreadsheet_id: str) -> str:
+    async def delete_spreadsheet(self, spreadsheet_id: str, tool_context: ToolContext) -> bool:
         """
-        Deletes a Google Spreadsheet by its ID.
+        Deletes a Google Spreadsheet by its ID. Returns True on success.
+        Args:
+            spreadsheet_id: The ID of the spreadsheet to delete.
+            tool_context: The runtime context.
         """
-        self._ensure_service()
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            logger.error("Cannot delete spreadsheet: user ID not found in context.")
+            return False
+
         logger.info(f"Toolset is calling sheets_service.delete_spreadsheet for ID: {spreadsheet_id}")
-        self.sheets_service.delete_spreadsheet(spreadsheet_id)
-        return f"Spreadsheet with ID '{spreadsheet_id}' deleted successfully."
+        return await self._sheets_service.delete_spreadsheet(user_id=user_id, spreadsheet_id=spreadsheet_id)
 
-    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
+    async def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """
         Returns a list of tools provided by this toolset.
         """
-        google_sheet_schema = {
-            "type": adk_types.Type.OBJECT,
-            "description": "Represents a Google Sheets spreadsheet.",
-            "properties": {
-                'id': {"type": adk_types.Type.STRING, "description": "The unique ID of the spreadsheet."},
-                'url': {"type": adk_types.Type.STRING, "description": "The URL of the spreadsheet."},
-                'title': {
-                    "type": adk_types.Type.STRING,
-                    "description": "The title of the spreadsheet."
-                    }
-            }
-        }
-
-        value_range_schema = {
-            "type": adk_types.Type.OBJECT,
-            "description": "Represents a range of values from a sheet.",
-            "properties": {
-                'range': {"type": adk_types.Type.STRING, "description": "The A1 notation of the range that was read."},
-                'major_dimension': {"type": adk_types.Type.STRING, "description": "The major dimension of the values (ROWS or COLUMNS)."},
-                'values': {
-                    "type": adk_types.Type.ARRAY, 
-                    "items": {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.ANY}}, 
-                    "description": "The data that was read or written."}
-            }
-        }
-
-        create_spreadsheet_declaration = adk_types.FunctionDeclaration(
-            name="create_google_sheet",
-            description="Creates a new, empty Google Sheets spreadsheet with a specified title.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'title': {"type": adk_types.Type.STRING, "description": "The title for the new spreadsheet."},
-                },
-                required=['title']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**google_sheet_schema)
-        )
-
-        get_spreadsheet_declaration = adk_types.FunctionDeclaration(
-            name="get_google_sheet",
-            description="Retrieves metadata for a specific Google Sheets spreadsheet by its ID.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to retrieve."},
-                },
-                required=['spreadsheet_id']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**google_sheet_schema)
-        )
-
-        read_range_declaration = adk_types.FunctionDeclaration(
-            name="read_google_sheet_range",
-            description="Reads a range of values from a Google Sheet. Use A1 notation (e.g., 'Sheet1!A1:B2').",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to read from."},
-                    'range_name': {"type": adk_types.Type.STRING, "description": "The range to read in A1 notation (e.g., 'Sheet1!A1:C5')."},
-                },
-                required=['spreadsheet_id', 'range_name']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**value_range_schema)
-        )
-
-        write_range_declaration = adk_types.FunctionDeclaration(
-            name="write_google_sheet_range",
-            description="Writes a range of values to a Google Sheet. The input values should be a list of lists.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to write to."},
-                    'range_name': {"type": adk_types.Type.STRING, "description": "The range to write in A1 notation (e.g., 'Sheet1!A1')."},
-                    'values': {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.ANY}}, "description": "A list of lists representing the rows and cells to write."},
-                },
-                required=['spreadsheet_id', 'range_name', 'values']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.OBJECT, "description": "An object containing details about the write operation."})
-        )
-
-        delete_spreadsheet_declaration = adk_types.FunctionDeclaration(
-            name="delete_google_sheet",
-            description="Permanently deletes a Google Sheet. This action cannot be undone.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'spreadsheet_id': {"type": adk_types.Type.STRING, "description": "The ID of the spreadsheet to delete."},
-                },
-                required=['spreadsheet_id']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
-        )
-
         return [
-            FunctionTool(func=self._create_spreadsheet, declaration=create_spreadsheet_declaration),
-            FunctionTool(func=self._get_spreadsheet, declaration=get_spreadsheet_declaration),
-            FunctionTool(func=self._read_range, declaration=read_range_declaration),
-            FunctionTool(func=self._write_range, declaration=write_range_declaration),
-            FunctionTool(func=self._delete_spreadsheet, declaration=delete_spreadsheet_declaration),
+            FunctionTool(func=self.create_spreadsheet),
+            FunctionTool(func=self.get_spreadsheet),
+            FunctionTool(func=self.read_range),
+            FunctionTool(func=self.write_range),
+            FunctionTool(func=self.delete_spreadsheet),
         ]

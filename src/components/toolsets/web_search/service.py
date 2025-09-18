@@ -7,10 +7,10 @@ class WebSearchService:
     def __init__(self, web_search_function=None):
         self.web_search_function = web_search_function
 
-    def search(self, request: WebSearchRequest) -> WebSearchResponse:
+    async def search(self, request: WebSearchRequest) -> WebSearchResponse:
         logger.info(f"Searching web for query: {request.query}")
         if self.web_search_function:
-            search_results = self.web_search_function(query=request.query)
+            search_results = self.web_search_function(query=request.query) # Assuming this can be awaited if it's async
         else:
             search_results = {"error": "Web search function not provided."}
         return WebSearchResponse(results=[str(search_results)])

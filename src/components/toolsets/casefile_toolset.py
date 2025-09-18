@@ -1,16 +1,18 @@
+# src/components/toolsets/casefile_toolset.py
 import logging
-import json
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Union
 
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
 from google.adk.tools import ToolContext
-from google.genai import types as adk_types
 
 from src.core.models.user import User
 from src.components.casefile.service import CasefileService
-from src.components.casefile.models import Casefile, CasefileUpdate
+from src.components.casefile.models import CasefileUpdate
+from src.core.models.google_workspace.drive import DriveFile
+from src.core.models.google_workspace.people import GooglePerson
+from src.core.models.ontology import CasefileRole
 
 logger = logging.getLogger(__name__)
 
@@ -20,19 +22,22 @@ class CasefileToolset(BaseToolset):
 
     def __init__(self, casefile_service: CasefileService):
         self._casefile_service = casefile_service
+        super().__init__()
 
-    def _get_user_id_from_context(self, tool_context: ToolContext) -> str:
+    def _get_user_id_from_context(self, tool_context: ToolContext) -> Optional[str]:
         """Helper to extract user ID from the tool context state."""
         user_json = tool_context.state.get("current_user")
         if not user_json:
-            raise ValueError("Could not find 'current_user' in tool context state.")
+            logger.warning("Could not find 'current_user' in tool context state.")
+            return None
         try:
             user = User.model_validate_json(user_json)
             return user.username
         except Exception as e:
-            raise ValueError(f"Failed to parse user from tool_context: {e}") from e
+            logger.error(f"Failed to parse user from tool_context: {e}")
+            return None
 
-    async def _list_all_casefiles(
+    async def list_all_casefiles(
         self, tool_context: ToolContext
     ) -> List[Dict[str, str]]:
         """Lists all available casefiles, returning a list of their names and IDs."""
@@ -42,285 +47,226 @@ class CasefileToolset(BaseToolset):
             return []
         return [{"id": cf.id, "name": cf.name} for cf in casefiles]
 
-    async def _create_casefile(
+    async def create_casefile(
         self, name: str, description: str, tool_context: ToolContext
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Dict[str, Any]:
         """
-        Creates a new casefile and returns the created casefile object as a dictionary.
+        Creates a new casefile.
+
+        Args:
+            name: The name of the new casefile.
+            description: A brief description of the new casefile.
+            tool_context: The runtime context.
+
+        Returns:
+            A dictionary containing the details of the newly created casefile.
         """
         user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            raise ValueError("Could not create casefile because user ID could not be determined from the context.")
+
         created_casefile = await self._casefile_service.create_casefile(
             name=name, description=description, user_id=user_id
         )
-        return created_casefile.model_dump() if created_casefile else None
+        return created_casefile.model_dump()
 
-    async def _delete_casefile(self, casefile_id: str, tool_context: ToolContext) -> bool:
+    async def delete_casefile(self, casefile_id: str, tool_context: ToolContext) -> bool:
         """
         Deletes a casefile by its ID. Returns True on success, False on failure.
+
+        Args:
+            casefile_id: The ID of the casefile to delete.
+            tool_context: The runtime context.
         """
         user_id = self._get_user_id_from_context(tool_context)
-        return await self._casefile_service.delete_casefile(
+        if not user_id:
+            raise ValueError("Could not delete casefile because user ID could not be determined.")
+
+        return await self._casefile_service.delete_casefile( # type: ignore
             casefile_id=casefile_id, user_id=user_id
         )
 
-    async def _get_casefile(
+    async def get_casefile(
         self, casefile_id: str, tool_context: ToolContext
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Union[Dict[str, Any], str]:
         """
-        Retrieves a single casefile by its ID. Returns the casefile object as a dictionary or None if not found.
+        Retrieves a single casefile by its ID.
+
+        Args:
+            casefile_id: The ID of the casefile to retrieve.
+            tool_context: The runtime context.
+
+        Returns:
+            A dictionary containing the casefile details, or an error string if not found.
         """
         casefile = await self._casefile_service.load_casefile(casefile_id=casefile_id)
-        return casefile.model_dump() if casefile else None
+        if not casefile:
+            return f"Casefile with ID '{casefile_id}' not found."
+        return casefile.model_dump()
 
-    async def _update_casefile(
+    async def update_casefile(
         self, casefile_id: str, updates: Dict[str, Any], tool_context: ToolContext
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Union[Dict[str, Any], str]:
         """
-        Updates an existing casefile with new data. Returns the updated casefile object as a dictionary.
+        Updates an existing casefile with new data.
+
+        Args:
+            casefile_id: The ID of the casefile to update.
+            updates: A dictionary with the fields to update in the casefile.
+            tool_context: The runtime context.
+
+        Returns:
+            A dictionary of the updated casefile, or an error string on failure.
         """
         user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            raise ValueError("Could not update casefile because user ID could not be determined.")
+
+        # The service layer expects a raw dictionary for updates.
+        # Pydantic validation on the input happens automatically by ADK.
         updates_dict = CasefileUpdate(**updates).model_dump(exclude_unset=True)
 
         updated_casefile = await self._casefile_service.update_casefile(
             casefile_id=casefile_id, updates=updates_dict, user_id=user_id
         )
-        return updated_casefile.model_dump() if updated_casefile else None
+        if not updated_casefile:
+            return f"Failed to update or find casefile with ID '{casefile_id}'."
+        return updated_casefile.model_dump()
 
-    async def _grant_access(
-        self,
-        casefile_id: str,
-        user_id_to_grant: str,
-        role: str,
-        tool_context: ToolContext,
-    ) -> Optional[Dict[str, Any]]:
+    async def grant_access(
+        self, casefile_id: str, user_id_to_grant: str, role: str, tool_context: ToolContext
+    ) -> Union[Dict[str, Any], str]:
         """
-        Grants a user a specific role on a casefile. Returns the updated casefile object as a dictionary.
+        Grants a user a specific role on a casefile.
+
+        Args:
+            casefile_id: The ID of the casefile.
+            user_id_to_grant: The ID of the user to grant access to.
+            role: The role to assign (e.g., 'reader', 'writer', 'admin').
+            tool_context: The runtime context.
+
+        Returns:
+            A dictionary of the updated casefile, or an error string on failure.
         """
         current_user_id = self._get_user_id_from_context(tool_context)
+        if not current_user_id:
+            raise ValueError("Could not grant access because the current user could not be determined.")
+
         updated_casefile = await self._casefile_service.grant_access(
             casefile_id=casefile_id,
             user_id_to_grant=user_id_to_grant,
             role=role,
             current_user_id=current_user_id,
         )
-        return updated_casefile.model_dump() if updated_casefile else None
+        if not updated_casefile:
+            # The service layer raises exceptions on failure, but as a fallback:
+            return f"Failed to grant access on casefile with ID '{casefile_id}'. Check permissions or user/casefile existence."
+        return updated_casefile.model_dump()
 
-    async def _revoke_access(
+    async def revoke_access(
         self, casefile_id: str, user_id_to_revoke: str, tool_context: ToolContext
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Union[Dict[str, Any], str]:
         """
-        Revokes a user's access to a casefile. Returns the updated casefile object as a dictionary.
+        Revokes a user's access to a casefile.
+
+        Args:
+            casefile_id: The ID of the casefile.
+            user_id_to_revoke: The ID of the user whose access is to be revoked.
+            tool_context: The runtime context.
+
+        Returns:
+            A dictionary of the updated casefile, or an error string on failure.
         """
         current_user_id = self._get_user_id_from_context(tool_context)
+        if not current_user_id:
+            raise ValueError("Could not revoke access because the current user could not be determined.")
+
         updated_casefile = await self._casefile_service.revoke_access(
-            casefile_id=casefile_id,
-            user_id_to_revoke=user_id_to_revoke,
-            current_user_id=current_user_id,
+            casefile_id=casefile_id, user_id_to_revoke=user_id_to_revoke, current_user_id=current_user_id
         )
-        return updated_casefile.model_dump() if updated_casefile else None
+        if not updated_casefile:
+            return f"Failed to revoke access on casefile with ID '{casefile_id}'. Check permissions or user/casefile existence."
+        return updated_casefile.model_dump()
 
-    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
+    async def add_drive_file_to_casefile(
+        self,
+        casefile_id: str,
+        drive_file_data: Dict[str, Any],
+        tool_context: ToolContext
+    ) -> Union[Dict[str, Any], str]:
+        """
+        Adds a Google Drive file object to the specified casefile.
+        The agent should first get the file using a Google Drive tool, and then pass the resulting object here.
+
+        Args:
+            casefile_id: The ID of the casefile to update.
+            drive_file_data: A dictionary representing the full DriveFile object.
+            tool_context: The runtime context.
+
+        Returns:
+            The updated casefile as a dictionary, or an error string.
+        """
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
+
+        try:
+            # Validate the incoming data against the specific Pydantic model
+            drive_file = DriveFile(**drive_file_data)
+            update_payload = {"drive_files": [drive_file.model_dump(by_alias=True)]}
+        except Exception as e:
+            return f"Invalid drive_file_data provided. Validation error: {e}"
+
+        logger.info(f"Adding Drive file '{drive_file.id}' to casefile '{casefile_id}'")
+        updated_casefile = await self._casefile_service.update_casefile(casefile_id, update_payload, user_id)
+        
+        if not updated_casefile:
+            return f"Failed to add Drive file to casefile '{casefile_id}'."
+        return updated_casefile.model_dump()
+
+    async def add_person_to_casefile(
+        self,
+        casefile_id: str,
+        person_data: Dict[str, Any],
+        tool_context: ToolContext
+    ) -> Union[Dict[str, Any], str]:
+        """
+        Adds a Google Person object to the specified casefile.
+        The agent should first get the contact using a Google People tool, and then pass the resulting object here.
+
+        Args:
+            casefile_id: The ID of the casefile to update.
+            person_data: A dictionary representing the full GooglePerson object.
+            tool_context: The runtime context.
+
+        Returns:
+            The updated casefile as a dictionary, or an error string.
+        """
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
+        try:
+            person = GooglePerson(**person_data)
+            update_payload = {"google_people": [person.model_dump(by_alias=True)]}
+        except Exception as e:
+            return f"Invalid person_data provided. Validation error: {e}"
+
+        logger.info(f"Adding Person '{person.resource_name}' to casefile '{casefile_id}'")
+        updated_casefile = await self._casefile_service.update_casefile(casefile_id, update_payload, user_id)
+        if not updated_casefile:
+            return f"Failed to add Person to casefile '{casefile_id}'."
+        return updated_casefile.model_dump()
+
+    async def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """Returns a list of all the tool methods in this toolset."""
-        
-        # Schema for the items in the list of casefiles
-        list_casefile_item_schema = {
-            "type": adk_types.Type.OBJECT,
-            "properties": {
-                "id": {"type": adk_types.Type.STRING},
-                "name": {"type": adk_types.Type.STRING},
-            },
-        }
-        
-        casefile_schema = {
-            "type": adk_types.Type.OBJECT,
-            "description": "The central, all-encompassing dossier-object for the MDS platform.",
-            "properties": {
-                "id": {"type": adk_types.Type.STRING, "description": "The unique ID of the casefile."},
-                "name": {"type": adk_types.Type.STRING, "description": "The name of the casefile."},
-                "description": {"type": adk_types.Type.STRING, "description": "A description of the casefile."},
-                "casefile_type": {"type": adk_types.Type.STRING, "description": "The type of casefile (e.g., 'research')."},
-                "created_at": {"type": adk_types.Type.STRING, "description": "The creation timestamp in ISO 8601 format."},
-                "modified_at": {"type": adk_types.Type.STRING, "description": "The last modification timestamp in ISO 8601 format."},
-                "owner_id": {"type": adk_types.Type.STRING, "description": "The ID of the user who owns the casefile."},
-                "acl": {
-                    "type": adk_types.Type.OBJECT,
-                    "description": "Access Control List. A dictionary mapping user IDs to their roles (e.g., 'admin', 'writer', 'reader').",
-                    "additional_properties": {"type": adk_types.Type.STRING},
-                },
-                "tags": {
-                    "type": adk_types.Type.ARRAY,
-                    "items": {"type": adk_types.Type.STRING},
-                    "description": "A list of tags for categorization."
-                },
-                "sub_casefile_ids": {
-                    "type": adk_types.Type.ARRAY,
-                    "items": {"type": adk_types.Type.STRING},
-                    "description": "A list of IDs of nested sub-casefiles."
-                },
-                "parent_id": {"type": adk_types.Type.STRING, "description": "The ID of the parent casefile, if this is a sub-casefile."},
-                "session_ids": {
-                    "type": adk_types.Type.ARRAY,
-                    "items": {"type": adk_types.Type.STRING},
-                    "description": "A list of IDs of associated ADK Session instances."
-                },
-                "drive_files_count": {"type": adk_types.Type.INTEGER, "description": "The number of associated Google Drive files."},
-                "gmail_messages_count": {"type": adk_types.Type.INTEGER, "description": "The number of associated Gmail messages."},
-                "calendar_events_count": {"type": adk_types.Type.INTEGER, "description": "The number of associated Google Calendar events."},
-            },
-        }
-
-        update_casefile_schema = {
-            "type": adk_types.Type.OBJECT,
-            "properties": {
-                "name": {"type": adk_types.Type.STRING},
-                "description": {"type": adk_types.Type.STRING},
-                "tags": {
-                    "type": adk_types.Type.ARRAY,
-                    "items": {"type": adk_types.Type.STRING},
-                },
-            },
-        }
-
         return [
-            FunctionTool(
-                func=self._list_all_casefiles,
-                declaration=adk_types.FunctionDeclaration(
-                    name="list_all_casefiles",
-                    description="Lists all available casefiles, returning a list of their names and IDs.",
-                    parameters=adk_types.Schema(
-                        type=adk_types.Type.OBJECT, properties={}
-                    ),
-                    returns=adk_types.FunctionDeclaration.schema(**{
-                        "type": adk_types.Type.ARRAY,
-                        "items": list_casefile_item_schema,
-                        "description": "A list of dictionaries, each containing the 'id' and 'name' of a casefile."
-                    }),
-                )
-            ),
-            FunctionTool(
-                func=self._create_casefile,
-                declaration=adk_types.FunctionDeclaration(
-                    name="create_casefile",
-                    description="Creates a new casefile and returns the created casefile object.",
-                    parameters=adk_types.Schema(
-                        type=adk_types.Type.OBJECT,
-                        properties={
-                            "name": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The name of the new casefile.",
-                            ),
-                            "description": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="A brief description of the new casefile.",
-                            ),
-                        },
-                        required=["name", "description"],
-                    ),
-                    returns=adk_types.FunctionDeclaration.schema(casefile_schema),
-                ),
-            ),
-            FunctionTool(
-                func=self._delete_casefile,
-                declaration=adk_types.FunctionDeclaration(
-                    name="delete_casefile",
-                    description="Deletes a casefile by its ID. Returns True on success, False on failure.",
-                    parameters=adk_types.Schema(
-                        type=adk_types.Type.OBJECT,
-                        properties={
-                            "casefile_id": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The ID of the casefile to delete.",
-                            ),
-                        },
-                        required=["casefile_id"],
-                    ),
-                    returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.BOOLEAN}),
-                ),
-            ),
-            FunctionTool(
-                func=self._get_casefile,
-                declaration=adk_types.FunctionDeclaration(
-                    name="get_casefile",
-                    description="Retrieves a single casefile by its ID. Returns the casefile object as a dictionary or None if not found.",
-                    parameters=adk_types.Schema(
-                        type=adk_types.Type.OBJECT,
-                        properties={
-                            "casefile_id": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The ID of the casefile to retrieve.",
-                            ),
-                        },
-                        required=["casefile_id"],
-                    ),
-                    returns=adk_types.FunctionDeclaration.schema(casefile_schema),
-                ),
-            ),
-            FunctionTool(
-                func=self._update_casefile,
-                declaration=adk_types.FunctionDeclaration(
-                    name="update_casefile",
-                    description="Updates an existing casefile with new data. Returns the updated casefile object as a dictionary.",
-                    parameters=adk_types.Schema(
-                        type=adk_types.Type.OBJECT,
-                        properties={
-                            "casefile_id": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The ID of the casefile to update.",
-                            ),
-                            "updates": adk_types.Schema(**update_casefile_schema),
-                        },
-                        required=["casefile_id", "updates"],
-                    ),
-                    returns=adk_types.FunctionDeclaration.schema(casefile_schema),
-                ),
-            ),
-            FunctionTool(
-                func=self._grant_access,
-                declaration=adk_types.FunctionDeclaration(
-                    name="grant_casefile_access",
-                    description="Grants a user a specific role on a casefile. Returns the updated casefile object.",
-                    parameters=adk_types.Schema(
-                        type=adk_types.Type.OBJECT,
-                        properties={
-                            "casefile_id": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The ID of the casefile to modify.",
-                            ),
-                            "user_id_to_grant": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The user ID to grant access to.",
-                            ),
-                            "role": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The role to grant (e.g., 'admin', 'writer', 'reader').",
-                            ),
-                        },
-                        required=["casefile_id", "user_id_to_grant", "role"],
-                    ),
-                    returns=adk_types.FunctionDeclaration.schema(casefile_schema),
-                ),
-            ),
-            FunctionTool(
-                func=self._revoke_access,
-                declaration=adk_types.FunctionDeclaration(
-                    name="revoke_casefile_access",
-                    description="Revokes a user's access to a casefile. Returns the updated casefile object.",
-                    parameters=adk_types.Schema(
-                        type=adk_types.Type.OBJECT,
-                        properties={
-                            "casefile_id": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-
-                                description="The ID of the casefile to modify.",
-                            ),
-                            "user_id_to_revoke": adk_types.Schema(
-                                type=adk_types.Type.STRING,
-                                description="The user ID to revoke access from.",
-                            ),
-                        },
-                        required=["casefile_id", "user_id_to_revoke"],
-                    ),
-                    returns=adk_types.FunctionDeclaration.schema(**casefile_schema),
-                ),
-            ),
+            FunctionTool(func=self.list_all_casefiles),
+            FunctionTool(func=self.create_casefile),
+            FunctionTool(func=self.delete_casefile),
+            FunctionTool(func=self.get_casefile),
+            FunctionTool(func=self.update_casefile),
+            FunctionTool(func=self.grant_access),
+            FunctionTool(func=self.revoke_access),
+            FunctionTool(func=self.add_drive_file_to_casefile),
+            FunctionTool(func=self.add_person_to_casefile),
         ]

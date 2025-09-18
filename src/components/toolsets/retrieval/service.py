@@ -7,7 +7,7 @@ class RetrievalService:
     def __init__(self):
         pass
 
-    def retrieve(self, request: RetrievalRequest) -> RetrievalResponse:
+    async def retrieve(self, request: RetrievalRequest) -> RetrievalResponse:
         logger.info(f"Retrieving information for query: {request.query}")
         # In a real implementation, this would perform a search
         # For now, we'll just return a dummy response

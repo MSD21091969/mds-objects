@@ -82,6 +82,11 @@ class CommunicationService:
                 session_id=session_id,
                 state=initial_state
             )
+            # VOEG DE NIEUWE SESSIE-ID TOE AAN DE CASEFILE
+            logger.info(f"Adding new session ID '{session.id}' to casefile '{casefile_id}'")
+            casefile.session_ids.append(session.id)
+            await self.casefile_service.update_casefile(casefile_id, {"session_ids": casefile.session_ids}, current_user.username)
+
 
         # 2. Initialiseer de ADK Runner
         runner = Runner(

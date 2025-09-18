@@ -1,12 +1,12 @@
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Optional, List, Union, Dict, Any
 
 from google.adk.tools.base_toolset import BaseToolset
 from google.adk.tools.function_tool import FunctionTool
 from google.adk.tools.base_tool import BaseTool
 from google.adk.tools import ToolContext
-from google.genai import types as adk_types
 
+from src.core.models.user import User
 from src.components.toolsets.google_workspace.people.service import GooglePeopleService
 from src.components.toolsets.google_workspace.people.models import GooglePerson
 
@@ -16,170 +16,127 @@ class GooglePeopleToolset(BaseToolset):
     """
     A toolset for interacting with Google People.
     """
-    def __init__(self, people_service: Optional[GooglePeopleService] = None):
+    def __init__(self, people_service: GooglePeopleService):
         super().__init__()
-        self.people_service = people_service
+        self._people_service = people_service
 
-    def _ensure_service(self):
-        """Checks if the People service is available."""
-        if not self.people_service:
-            raise ConnectionError("GooglePeopleService is not available.")
+    def _get_user_id_from_context(self, tool_context: ToolContext) -> Optional[str]:
+        """Helper to extract user ID from the tool context state."""
+        user_json = tool_context.state.get("current_user")
+        if not user_json:
+            logger.warning("Could not find 'current_user' in tool context state.")
+            return None
+        try:
+            user = User.model_validate_json(user_json)
+            return user.username
+        except Exception as e:
+            logger.error(f"Failed to parse user from tool_context: {e}")
+            return None
 
-    def _list_contacts(self, page_size: int = 100) -> List[Dict[str, Any]]:
+    async def list_contacts(self, tool_context: ToolContext, page_size: int = 100) -> Union[List[Dict[str, Any]], str]:
         """
         Lists contacts from the user's Google Contacts.
+        Args:
+            tool_context: The runtime context.
+            page_size: The maximum number of contacts to return.
         """
-        self._ensure_service()
-        logger.info(f"Toolset is calling people_service.list_contacts with page_size: {page_size}")
-        contacts = self.people_service.list_contacts(page_size)
-        return [contact.model_dump() for contact in contacts]
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
 
-    def _get_contact(self, resource_name: str) -> Optional[Dict[str, Any]]:
+        logger.info(f"Toolset calling people_service.list_contacts for user '{user_id}'")
+        contacts = await self._people_service.list_contacts(user_id=user_id, page_size=page_size)
+        return [contact.model_dump(by_alias=True) for contact in contacts]
+
+    async def get_contact(self, resource_name: str, tool_context: ToolContext) -> Union[Dict[str, Any], str]:
         """
         Gets a single contact by its resource name.
+        Args:
+            resource_name: The resource name of the contact to retrieve.
+            tool_context: The runtime context.
         """
-        self._ensure_service()
-        logger.info(f"Toolset is calling people_service.get_contact for resource name: {resource_name}")
-        contact = self.people_service.get_contact(resource_name)
-        return contact.model_dump() if contact else None
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
 
-    def _create_contact(self, given_name: str, family_name: str, email: Optional[str] = None, phone: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        logger.info(f"Toolset calling people_service.get_contact for user '{user_id}'")
+        contact = await self._people_service.get_contact(user_id=user_id, resource_name=resource_name)
+        if not contact:
+            return f"Contact with resource name '{resource_name}' not found or access was denied."
+        return contact.model_dump(by_alias=True)
+
+    async def create_contact(self, given_name: str, family_name: str, tool_context: ToolContext, email: Optional[str] = None, phone: Optional[str] = None) -> Union[Dict[str, Any], str]:
         """
         Creates a new contact.
+        Args:
+            given_name: The contact's first name.
+            family_name: The contact's last name.
+            tool_context: The runtime context.
+            email: The contact's email address.
+            phone: The contact's phone number.
         """
-        self._ensure_service()
-        logger.info(f"Toolset is calling people_service.create_contact for {given_name} {family_name}")
-        contact = self.people_service.create_contact(given_name, family_name, email, phone)
-        return contact.model_dump() if contact else None
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
 
-    def _update_contact(self, resource_name: str, etag: str, given_name: Optional[str] = None, family_name: Optional[str] = None, email: Optional[str] = None, phone: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        logger.info(f"Toolset calling people_service.create_contact for user '{user_id}'")
+        contact = await self._people_service.create_contact(user_id=user_id, given_name=given_name, family_name=family_name, email=email, phone=phone)
+        if not contact:
+            return f"Failed to create contact '{given_name} {family_name}'."
+        return contact.model_dump(by_alias=True)
+
+    async def update_contact(self, resource_name: str, etag: str, tool_context: ToolContext, given_name: Optional[str] = None, family_name: Optional[str] = None, email: Optional[str] = None, phone: Optional[str] = None) -> Union[Dict[str, Any], str]:
         """
         Updates an existing contact.
+        Args:
+            resource_name: The resource name of the contact to update.
+            etag: The etag of the contact, used for optimistic concurrency control.
+            tool_context: The runtime context.
+            given_name: The new first name.
+            family_name: The new last name.
+            email: The new email address.
+            phone: The new phone number.
         """
-        self._ensure_service()
-        logger.info(f"Toolset is calling people_service.update_contact for resource name: {resource_name}")
-        contact = self.people_service.update_contact(resource_name, etag, given_name, family_name, email, phone)
-        return contact.model_dump() if contact else None
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            return "Error: Could not determine the user to perform this action for."
 
-    def _delete_contact(self, resource_name: str) -> str:
-        """
-        Deletes a contact.
-        """
-        self._ensure_service()
-        logger.info(f"Toolset is calling people_service.delete_contact for resource name: {resource_name}")
-        self.people_service.delete_contact(resource_name)
-        return f"Contact with resource name '{resource_name}' deleted successfully."
+        updates = {
+            "given_name": given_name,
+            "family_name": family_name,
+            "email": email,
+            "phone": phone,
+        }
 
-    def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
+        logger.info(f"Toolset calling people_service.update_contact for user '{user_id}'")
+        contact = await self._people_service.update_contact(user_id=user_id, resource_name=resource_name, etag=etag, updates=updates)
+        if not contact:
+            return f"Failed to update contact '{resource_name}'."
+        return contact.model_dump(by_alias=True)
+
+    async def delete_contact(self, resource_name: str, tool_context: ToolContext) -> bool:
+        """
+        Deletes a contact. Returns True on success.
+        Args:
+            resource_name: The resource name of the contact to delete.
+            tool_context: The runtime context.
+        """
+        user_id = self._get_user_id_from_context(tool_context)
+        if not user_id:
+            logger.error("Cannot delete contact: user ID not found in context.")
+            return False
+
+        logger.info(f"Toolset calling people_service.delete_contact for user '{user_id}'")
+        return await self._people_service.delete_contact(user_id=user_id, resource_name=resource_name)
+
+    async def get_tools(self, tool_context: "ToolContext") -> list[BaseTool]:
         """
         Returns a list of tools provided by this toolset.
         """
-        google_person_schema = {
-            "type": adk_types.Type.OBJECT,
-            "description": "Represents a person in Google Contacts.",
-            "properties": {
-                'resource_name': {"type": adk_types.Type.STRING, "description": "The unique resource name for the contact."},
-                'etag': {"type": adk_types.Type.STRING, "description": "The ETag of the resource, required for updates."},
-                'display_name': {"type": adk_types.Type.STRING, "description": "The contact's full name."},
-                'email_addresses': {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.STRING}, "description": "A list of the contact's email addresses."},
-                'phone_numbers': {"type": adk_types.Type.ARRAY, "items": {"type": adk_types.Type.STRING}, "description": "A list of the contact's phone numbers."},
-            }
-        }
-
-        list_contacts_declaration = adk_types.FunctionDeclaration(
-            name="list_google_contacts",
-            description="Lists contacts from the user's Google Contacts.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'page_size': {"type": adk_types.Type.INTEGER, "description": "The maximum number of contacts to return. Defaults to 100."},
-                }
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**{
-                "type": adk_types.Type.ARRAY,
-                "items": google_person_schema
-            })
-        )
-
-        get_contact_declaration = adk_types.FunctionDeclaration(
-            name="get_google_contact",
-            description="Gets a single contact by its unique resource name.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'resource_name': {"type": adk_types.Type.STRING, "description": "The resource name of the contact to retrieve (e.g., 'people/c123456')."},
-                },
-                required=['resource_name']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**google_person_schema)
-        )
-
-        create_contact_declaration = adk_types.FunctionDeclaration(
-            name="create_google_contact",
-            description="Creates a new contact in Google Contacts.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'given_name': {"type": adk_types.Type.STRING, "description": "The contact's first name."},
-                    'family_name': {"type": adk_types.Type.STRING, "description": "The contact's last name."},
-                    'email': {"type": adk_types.Type.STRING, "description": "The contact's primary email address."},
-                    'phone': {"type": adk_types.Type.STRING, "description": "The contact's primary phone number."}
-                },
-                required=['given_name', 'family_name']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**google_person_schema)
-        )
-
-        update_contact_declaration = adk_types.FunctionDeclaration(
-            name="update_google_contact",
-            description="Updates an existing contact. The 'etag' from a get_contact call is required for this operation.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'resource_name': {"type": adk_types.Type.STRING, "description": "The resource name of the contact to update."},
-                    'etag': {"type": adk_types.Type.STRING, "description": "The ETag of the contact, used for optimistic concurrency control."},
-                    'given_name': {"type": adk_types.Type.STRING, "description": "The contact's new first name."},
-                    'family_name': {"type": adk_types.Type.STRING, "description": "The contact's new last name."},
-                    'email': {"type": adk_types.Type.STRING, "description": "The contact's new primary email address."},
-                    'phone': {"type": adk_types.Type.STRING, "description": "The contact's new primary phone number."},
-                },
-                required=['resource_name', 'etag']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**google_person_schema)
-        )
-
-        delete_contact_declaration = adk_types.FunctionDeclaration(
-            name="delete_google_contact",
-            description="Deletes a contact from Google Contacts.",
-            parameters=adk_types.Schema(
-                type=adk_types.Type.OBJECT,
-                properties={
-                    'resource_name': {"type": adk_types.Type.STRING, "description": "The resource name of the contact to delete."},
-                },
-                required=['resource_name']
-            ),
-            returns=adk_types.FunctionDeclaration.schema(**{"type": adk_types.Type.STRING, "description": "A confirmation message indicating success."})
-        )
-
         return [
-            FunctionTool(
-                func=self._list_contacts,
-                declaration=list_contacts_declaration
-            ),
-            FunctionTool(
-                func=self._get_contact,
-                declaration=get_contact_declaration
-            ),
-            FunctionTool(
-                func=self._create_contact,
-                declaration=create_contact_declaration
-            ),
-            FunctionTool(
-                func=self._update_contact,
-                declaration=update_contact_declaration
-            ),
-            FunctionTool(
-                func=self._delete_contact,
-                declaration=delete_contact_declaration
-            ),
+            FunctionTool(func=self.list_contacts),
+            FunctionTool(func=self.get_contact),
+            FunctionTool(func=self.create_contact),
+            FunctionTool(func=self.update_contact),
+            FunctionTool(func=self.delete_contact),
         ]

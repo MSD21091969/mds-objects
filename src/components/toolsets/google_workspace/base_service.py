@@ -1,92 +1,76 @@
-
+# src/components/toolsets/google_workspace/base_service.py
 
 import logging
-from google.auth import default as google_auth_default
 import os
 import json
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError
+
+from src.core.managers.database_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
 class BaseGoogleService:
     """
-    A base class for Google API services that handles common authentication and service building logic.
+    A base class for Google API services that handles user-specific authentication
+    and service building logic.
     """
-    def __init__(self, client_secrets_path: str, token_path: str = "token.json"):
-        self.client_secrets_path = client_secrets_path
-        self.token_path = token_path
-        self.service: Optional[Resource] = None
-
-    def _build_service(self, service_name: str, service_version: str, scopes: List[str]) -> Optional[Resource]:
+    def __init__(self, db_manager: DatabaseManager):
         """
-        Authenticates the user and builds the Google API service object.
-        """
-        creds = None
+        Initializes the base service with a database manager.
 
-        # --- Recommendation: Prioritize Service Account (ADC) ---
-        # First, try to get credentials from the environment (Application Default Credentials)
-        # This will automatically use GOOGLE_APPLICATION_CREDENTIALS if it's set.
+        Args:
+            db_manager: An instance of DatabaseManager to interact with the database.
+        """
+        self.db_manager = db_manager
+        self.service_name: str = ""
+        self.service_version: str = ""
+        self.scopes: List[str] = []
+
+    async def get_service_for_user(self, user_id: str) -> Optional[Resource]:
+        """
+        Builds and returns a Google API service object for a specific user.
+
+        It retrieves the user's OAuth token from the database, refreshes it if
+        necessary, and then builds the service object.
+
+        Args:
+            user_id: The username or ID of the user to build the service for.
+
+        Returns:
+            An authenticated Google API service resource, or None if authentication fails.
+        """
+        user_data = await self.db_manager.get("users", user_id)
+        if not user_data or "google_token" not in user_data:
+            logger.error(f"No Google token found for user '{user_id}' in the database.")
+            return None
+
         try:
-            creds, project = google_auth_default(scopes=scopes)
-            # Add a check to ensure creds are valid, otherwise fall through
-            if not (creds and creds.valid):
-                creds = None
-                logger.info("Application Default Credentials not found or invalid. Falling back to OAuth flow.")
-            else:
-                 logger.info("Successfully authenticated using Application Default Credentials (Service Account).")
-        except Exception as e:
-            logger.info(f"Could not use Application Default Credentials: {e}. Falling back to OAuth flow.")
-            creds = None
-        # --- End Recommendation ---
+            # The token is stored as a JSON string in the database
+            token_info = json.loads(user_data["google_token"])
+            creds = Credentials.from_authorized_user_info(token_info, self.scopes)
 
-        # Fallback to the original OAuth 2.0 flow if ADC fails
-        if not creds: # Only run this block if ADC failed
-            logger.info("Attempting authentication using local OAuth 2.0 flow (token.json / client_secrets.json).")
-            if os.path.exists(self.token_path):
-                # Check if existing token has all the required scopes
-                with open(self.token_path, 'r') as token:
-                    token_data = json.load(token)
-                    existing_scopes = token_data.get('scopes', [])
-                if all(s in existing_scopes for s in scopes):
-                    creds = Credentials.from_authorized_user_file(self.token_path, scopes)
-                else:
-                    # Scopes have changed, force re-authentication
-                    creds = None
-
-            # If there are no (valid) credentials, let the user log in.
-            if not creds or not creds.valid:
-                if creds and creds.expired and creds.refresh_token:
+            if not creds.valid:
+                if creds.expired and creds.refresh_token:
+                    logger.info(f"Refreshing expired Google token for user '{user_id}'.")
                     creds.refresh(Request())
+                    # Persist the new token back to the database
+                    new_token_info = json.loads(creds.to_json())
+                    await self.db_manager.update("users", user_id, {"google_token": json.dumps(new_token_info)})
+                    logger.info(f"Successfully refreshed and saved new token for user '{user_id}'.")
                 else:
-                    # Check if interactive authentication is allowed by an env var
-                    if os.getenv('MDS_ALLOW_INTERACTIVE_AUTH') == '1':
-                        # Combine all known scopes to avoid re-auth for every tool
-                        all_known_scopes = list(set(existing_scopes + scopes))
-                        flow = InstalledAppFlow.from_client_secrets_file(
-                            self.client_secrets_path, all_known_scopes)
-                        creds = flow.run_local_server(port=8080)
-                    else:
-                        error_message = (
-                            "Authentication failed. No valid credentials found (neither ADC nor token.json). "
-                            "To use OAuth, set MDS_ALLOW_INTERACTIVE_AUTH=1. "
-                            "To use a service account, ensure GOOGLE_APPLICATION_CREDENTIALS is set correctly."
-                        )
-                        logger.error(error_message)
-                        raise RuntimeError(error_message)
+                    logger.error(f"Google token for user '{user_id}' is invalid and cannot be refreshed.")
+                    # Here you might want to trigger a re-authentication flow for the user.
+                    return None
 
-                with open(self.token_path, 'w') as token:
-                    token.write(creds.to_json())
-        
-        try:
-            self.service = build(service_name, service_version, credentials=creds)
-            logger.info(f"Successfully built service: {service_name} v{service_version}")
-            return self.service
-        except Exception as e:
-            logger.error(f"An error occurred during service initialization for {service_name}: {e}", exc_info=True)
+            service = build(self.service_name, self.service_version, credentials=creds)
+            logger.debug(f"Successfully built service '{self.service_name}' for user '{user_id}'.")
+            return service
+
+        except (json.JSONDecodeError, KeyError, HttpError) as e:
+            logger.error(f"Failed to build Google service for user '{user_id}': {e}", exc_info=True)
             return None

@@ -201,18 +201,33 @@ class CasefileService:
 
             for key, value in updates.items():
                 if hasattr(casefile, key):
-                    # Special handling for lists of Pydantic models
-                    if key == "processed_files" and isinstance(value, list):
-                        # Convert list of dicts to list of ProcessedArtifact models
-                        setattr(casefile, key, [ProcessedArtifact(**item) for item in value])
-                    elif isinstance(getattr(casefile, key), list) and key != "processed_files":
-                        # Generic handling for other lists (like tags)
-                        current_value = getattr(casefile, key)
-                        new_items = value if isinstance(value, list) else [value]
-                        updated_list = list(dict.fromkeys(current_value + new_items))
-                        setattr(casefile, key, updated_list)
+                    current_field_value = getattr(casefile, key)
+                    # Check if the field is a list and the update value is also a list
+                    if isinstance(current_field_value, list) and isinstance(value, list):
+                        # This logic handles appending complex objects (like DriveFile)
+                        # and preventing duplicates based on their 'id' or 'object_id'.
+                        
+                        # Create a dictionary of existing items by their ID for quick lookups.
+                        # It assumes items in the list are Pydantic models with an 'id' or similar unique field.
+                        # We handle both dicts (from model_dump) and model objects.
+                        existing_items_map = {}
+                        for item in current_field_value:
+                            if isinstance(item, dict):
+                                item_id = item.get('id') or item.get('object_id')
+                                if item_id: existing_items_map[item_id] = item
+                            elif hasattr(item, 'id'):
+                                existing_items_map[item.id] = item
+
+                        # Add new items if they are not already in the map.
+                        for new_item_data in value:
+                            new_item_id = new_item_data.get('id') or new_item_data.get('object_id')
+                            if new_item_id and new_item_id not in existing_items_map:
+                                existing_items_map[new_item_id] = new_item_data
+                        
+                        # Set the attribute to the new list of unique items.
+                        setattr(casefile, key, list(existing_items_map.values()))
                     else:
-                        # Handling for simple fields
+                        # Handling for simple, non-list fields (name, description, etc.)
                         setattr(casefile, key, value)
                 else:
                     logger.warning(f"Attempted to update non-existent attribute '{key}' on Casefile '{casefile_id}'.")
@@ -369,3 +384,31 @@ class CasefileService:
         # In the future, this would query the 'system_directives' collection group
         # where 'is_active' == True.
         return []
+
+    async def add_to_list_field(self, casefile_id: str, field_name: str, value_to_add: Any, user_id: str) -> Optional[Casefile]:
+        """
+        Adds a value to a list field within a casefile document if it's not already present.
+        This is a convenience method that uses the main update_casefile logic.
+        """
+        casefile = await self.load_casefile(casefile_id)
+        if not casefile:
+            logger.error(f"Cannot add to list, casefile {casefile_id} not found.")
+            return None
+
+        # The update_casefile method already performs authorization checks.
+
+        current_list = getattr(casefile, field_name, [])
+        if not isinstance(current_list, list):
+             logger.error(f"Field '{field_name}' on casefile '{casefile_id}' is not a list.")
+             return None # Or raise an error
+
+        if value_to_add not in current_list:
+            # We create a new list to ensure the change is detected.
+            updated_list = current_list + [value_to_add]
+            updates = {field_name: updated_list}
+            # Call the main update method which handles transactions and caching
+            return await self.update_casefile(casefile_id, updates, user_id)
+
+        # If the value is already in the list, no update is needed.
+        logger.debug(f"Value '{value_to_add}' already exists in field '{field_name}' for casefile '{casefile_id}'. No update performed.")
+        return casefile

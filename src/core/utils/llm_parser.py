@@ -9,6 +9,19 @@ from google.generativeai import GenerativeModel
 
 logger = logging.getLogger(__name__)
 
+def _extract_json_from_string(text: str) -> str:
+    """
+    Extracts a JSON object from a string, which might be wrapped in markdown.
+    Handles ```json ... ``` and ``` ... ``` blocks.
+    """
+    # Zoek naar een JSON markdown blok
+    match = re.search(r"```(json)?\n(.*?)\n```", text, re.DOTALL | re.IGNORECASE)
+    if match:
+        # Groep 2 bevat de JSON content
+        return match.group(2).strip()
+    # Als er geen markdown blok is, ga er dan vanuit dat de hele string JSON is
+    return text.strip()
+
 async def parse_llm_json_output(
     json_string: str, 
     pydantic_model: Type[BaseModel], 
@@ -19,13 +32,8 @@ async def parse_llm_json_output(
     and attempts to self-correct if parsing fails.
     """
     try:
-        # EERSTE WIJZIGING: Extraheer JSON uit de initiële input
-        match = re.search(r"```json\n(.*?)\n```", json_string, re.DOTALL)
-        if match:
-            clean_json_string = match.group(1).strip()
-        else:
-            clean_json_string = json_string.strip()
-
+        # Poging 1: Extraheer en parse de JSON
+        clean_json_string = _extract_json_from_string(json_string)
         data = json.loads(clean_json_string)
         pydantic_model(**data)
         logger.info(f"Successfully parsed and validated JSON for model {pydantic_model.__name__}.")
@@ -48,19 +56,13 @@ async def parse_llm_json_output(
         logger.info(f"Raw response from self-correction LLM: {corrected_json_string}")
 
         try:
-            # TWEEDE WIJZIGING: Extraheer JSON ook uit de gecorrigeerde output
-            final_match = re.search(r"```json\n(.*?)\n```", corrected_json_string, re.DOTALL)
-            if final_match:
-                final_json_string = final_match.group(1).strip()
-                logger.info("Extracted JSON from self-correction response markdown block.")
-            else:
-                final_json_string = corrected_json_string.strip()
-                logger.warning("No markdown block in self-correction response, parsing raw text.")
-            
+            # Poging 2: Extraheer en parse de gecorrigeerde JSON
+            final_json_string = _extract_json_from_string(corrected_json_string)
             data = json.loads(final_json_string)
             pydantic_model(**data)
             logger.info(f"Successfully parsed and validated JSON for model {pydantic_model.__name__} after self-correction.")
             return data
         except (json.JSONDecodeError, ValidationError) as final_e:
             logger.error(f"Final JSON parsing/validation failed after self-correction: {final_e}")
-            raise ValueError(f"Failed to parse LLM output for {pydantic_model.__name__}, even after self-correction.") from final_e
+            error_message = f"Failed to parse LLM output for {pydantic_model.__name__} even after self-correction. Final attempt content: '{final_json_string}'"
+            raise ValueError(error_message) from final_e

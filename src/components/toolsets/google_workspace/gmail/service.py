@@ -1,5 +1,6 @@
 import logging
 import base64
+import asyncio
 from email.mime.text import MIMEText
 from datetime import date, timedelta
 from typing import List, Dict, Any, Optional, Tuple
@@ -20,8 +21,8 @@ class GoogleGmailService(BaseGoogleService):
     A service class to interact with the Google Gmail API, inheriting common logic
     from BaseGoogleService.
     """
-    def __init__(self, client_secrets_path: str, token_path: str = "token.json"):
-        super().__init__(client_secrets_path, token_path)
+    def __init__(self, client_secrets_path: str, token_path: str = "token.json", port: int = 8080):
+        super().__init__(client_secrets_path, token_path, port=port)
         self._build_service(SERVICE_NAME, SERVICE_VERSION, SCOPES)
 
     def _parse_message_payload(self, payload: Dict[str, Any]) -> Tuple[Optional[str], List[Attachment]]:
@@ -56,7 +57,7 @@ class GoogleGmailService(BaseGoogleService):
 
         return body, attachments
 
-    def search_emails(self, start_date: date, end_date: date) -> List[GmailMessage]:
+    async def search_emails(self, start_date: date, end_date: date) -> List[GmailMessage]:
         """
         Searches for emails within a specific date range and retrieves their full content.
         """
@@ -69,7 +70,9 @@ class GoogleGmailService(BaseGoogleService):
             query = f"after:{inclusive_start_date.strftime('%Y/%m/%d')} before:{end_date.strftime('%Y/%m/%d')}"
             logger.info(f"Searching Gmail with query: '{query}'")
             
-            response = self.service.users().messages().list(userId='me', q=query).execute()
+            response = await asyncio.to_thread(
+                self.service.users().messages().list(userId='me', q=query).execute
+            )
             messages = response.get('messages', [])
 
             if not messages:
@@ -78,7 +81,9 @@ class GoogleGmailService(BaseGoogleService):
 
             email_list = []
             for msg in messages:
-                msg_data = self.service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
+                msg_data = await asyncio.to_thread(
+                    self.service.users().messages().get(userId='me', id=msg['id'], format='full').execute
+                )
                 
                 headers = {h['name']: h['value'] for h in msg_data['payload']['headers']}
                 body, attachments = self._parse_message_payload(msg_data.get('payload', {}))
@@ -101,7 +106,7 @@ class GoogleGmailService(BaseGoogleService):
             logger.error(f"An error occurred while searching emails: {error}")
             return []
 
-    def get_attachment(self, message_id: str, attachment_id: str) -> Optional[bytes]:
+    async def get_attachment(self, message_id: str, attachment_id: str) -> Optional[bytes]:
         """Gets the raw data of a specific attachment."""
         if not self.service:
             logger.error("GoogleGmailService is not authenticated. Cannot get attachment.")
@@ -109,14 +114,15 @@ class GoogleGmailService(BaseGoogleService):
         try:
             attachment_data = self.service.users().messages().attachments().get(
                 userId='me', messageId=message_id, id=attachment_id
-            ).execute()
+            )
+            attachment_data = await asyncio.to_thread(attachment_data.execute)
             file_data = base64.urlsafe_b64decode(attachment_data['data'].encode('UTF-8'))
             return file_data
         except HttpError as error:
             logger.error(f"An error occurred while getting attachment {attachment_id}: {error}")
             return None
 
-    def get_email(self, message_id: str) -> Optional[GmailMessage]:
+    async def get_email(self, message_id: str) -> Optional[GmailMessage]:
         """
         Gets a single email by its ID.
         """
@@ -124,7 +130,9 @@ class GoogleGmailService(BaseGoogleService):
             logger.error("GoogleGmailService is not authenticated. Cannot get email.")
             return None
         try:
-            msg_data = self.service.users().messages().get(userId='me', id=message_id, format='full').execute()
+            msg_data = await asyncio.to_thread(
+                self.service.users().messages().get(userId='me', id=message_id, format='full').execute
+            )
             headers = {h['name']: h['value'] for h in msg_data['payload']['headers']}
             body, attachments = self._parse_message_payload(msg_data.get('payload', {}))
             email_details = {
@@ -141,7 +149,7 @@ class GoogleGmailService(BaseGoogleService):
             logger.error(f"An error occurred while getting email {message_id}: {error}")
             return None
 
-    def send_email(self, to: str, subject: str, message_text: str) -> Optional[GmailMessage]:
+    async def send_email(self, to: str, subject: str, message_text: str) -> Optional[GmailMessage]:
         """
         Sends an email.
         """
@@ -154,13 +162,15 @@ class GoogleGmailService(BaseGoogleService):
             message['subject'] = subject
             raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             body = {'raw': raw_message}
-            sent_message = self.service.users().messages().send(userId='me', body=body).execute()
-            return self.get_email(sent_message['id'])
+            sent_message = await asyncio.to_thread(
+                self.service.users().messages().send(userId='me', body=body).execute
+            )
+            return await self.get_email(sent_message['id'])
         except HttpError as error:
             logger.error(f"An error occurred while sending email: {error}")
             return None
 
-    def delete_email(self, message_id: str):
+    async def delete_email(self, message_id: str):
         """
         Deletes an email by its ID.
         """
@@ -168,7 +178,9 @@ class GoogleGmailService(BaseGoogleService):
             logger.error("GoogleGmailService is not authenticated. Cannot delete email.")
             return
         try:
-            self.service.users().messages().delete(userId='me', id=message_id).execute()
+            await asyncio.to_thread(
+                self.service.users().messages().delete(userId='me', id=message_id).execute
+            )
             logger.info(f"Email with ID '{message_id}' deleted successfully.")
         except HttpError as error:
             logger.error(f"An error occurred while deleting email {message_id}: {error}")

@@ -1,8 +1,12 @@
+# src/components/toolsets/google_workspace/docs/service.py
+
 import logging
 from typing import Optional
+
 from googleapiclient.errors import HttpError
 
 from src.components.toolsets.google_workspace.base_service import BaseGoogleService
+from src.core.managers.database_manager import DatabaseManager
 from .models import GoogleDoc
 
 logger = logging.getLogger(__name__)
@@ -13,103 +17,98 @@ SERVICE_VERSION = 'v1'
 
 class GoogleDocsService(BaseGoogleService):
     """
-    A service class to interact with the Google Docs API, inheriting common logic
-    from BaseGoogleService.
+    A service class to interact with the Google Docs API using user-specific credentials.
     """
-    def __init__(self, client_secrets_path: str, token_path: str = "token.json"):
-        super().__init__(client_secrets_path, token_path)
-        self._build_service(SERVICE_NAME, SERVICE_VERSION, SCOPES)
+    def __init__(self, db_manager: DatabaseManager):
+        super().__init__(db_manager)
+        self.service_name = SERVICE_NAME
+        self.service_version = SERVICE_VERSION
+        self.scopes = SCOPES
 
-    def create_document(self, title: str, body_content: str) -> Optional[GoogleDoc]:
+    async def create_document(
+        self,
+        user_id: str,
+        title: str,
+        body_content: Optional[str] = None
+    ) -> Optional[GoogleDoc]:
         """
-        Creates a new Google Doc.
+        Creates a new Google Doc for a specific user.
         """
-        if not self.service:
-            logger.error("GoogleDocsService is not authenticated.")
+        service = await self.get_service_for_user(user_id)
+        if not service:
+            logger.error(f"Could not get authenticated Google Docs service for user {user_id}.")
             return None
 
         try:
-            document = {
-                'title': title
-            }
-            doc = self.service.documents().create(body=document).execute()
+            document_body = {'title': title}
+            doc = service.documents().create(body=document_body).execute()
             doc_id = doc.get('documentId')
 
             if body_content:
-                requests = [
-                    {
-                        'insertText': {
-                            'location': {
-                                'index': 1,
-                            },
-                            'text': body_content
-                        }
+                requests = [{
+                    'insertText': {
+                        'location': {'index': 1},
+                        'text': body_content
                     }
-                ]
-                self.service.documents().batchUpdate(documentId=doc_id, body={'requests': requests}).execute()
-            
-            doc['document_url'] = f"https://docs.google.com/document/d/{doc_id}"
-            return GoogleDoc(**doc)
+                }]
+                service.documents().batchUpdate(documentId=doc_id, body={'requests': requests}).execute()
+
+            # Fetch the full document again to get all properties
+            created_doc = service.documents().get(documentId=doc_id).execute()
+            logger.info(f"Successfully created Google Doc '{title}' for user '{user_id}'.")
+            return GoogleDoc(**created_doc)
 
         except HttpError as error:
-            logger.error(f"An error occurred while creating the document: {error}")
+            logger.error(f"An error occurred while creating document for user {user_id}: {error}")
             return None
 
-    def get_document(self, document_id: str) -> Optional[GoogleDoc]:
+    async def get_document(self, user_id: str, document_id: str) -> Optional[GoogleDoc]:
         """
-        Gets a Google Doc by its ID.
+        Gets a Google Doc by its ID for a specific user.
         """
-        if not self.service:
-            logger.error("GoogleDocsService is not authenticated.")
+        service = await self.get_service_for_user(user_id)
+        if not service:
+            logger.error(f"Could not get authenticated Google Docs service for user {user_id}.")
             return None
         try:
-            doc = self.service.documents().get(documentId=document_id).execute()
-            doc['document_url'] = f"https://docs.google.com/document/d/{doc['documentId']}"
+            doc = service.documents().get(documentId=document_id).execute()
             return GoogleDoc(**doc)
         except HttpError as error:
-            logger.error(f"An error occurred while getting the document: {error}")
+            logger.error(f"An error occurred while getting document {document_id} for user {user_id}: {error}")
             return None
 
-    def update_document_body(self, document_id: str, body_content: str) -> Optional[GoogleDoc]:
+    async def update_document_body(
+        self,
+        user_id: str,
+        document_id: str,
+        body_content: str
+    ) -> Optional[GoogleDoc]:
         """
-        Replaces the entire body of a Google Doc with new content.
+        Replaces the entire body of a Google Doc with new content for a specific user.
         """
-        if not self.service:
-            logger.error("GoogleDocsService is not authenticated.")
+        service = await self.get_service_for_user(user_id)
+        if not service:
+            logger.error(f"Could not get authenticated Google Docs service for user {user_id}.")
             return None
         try:
-            # To replace content, we first need to get the current document size
-            # to delete it, then insert the new content.
-            document = self.service.documents().get(documentId=document_id, fields='body(content)').execute()
+            # Get current document size to delete existing content
+            document = service.documents().get(documentId=document_id, fields='body(content)').execute()
             content = document.get('body', {}).get('content', [])
             
             requests = []
             if content:
-                # The last element in the content list has the final end index.
-                last_element = content[-1]
-                end_index = last_element.get('endIndex')
-                
-                # We can only delete if there's a valid range. The body always starts at 1.
+                end_index = content[-1].get('endIndex')
                 if end_index and end_index > 1:
-                    requests.append({
-                        'deleteContentRange': {
-                            'range': { 'startIndex': 1, 'endIndex': end_index - 1 }
-                        }
-                    })
+                    requests.append({'deleteContentRange': {'range': {'startIndex': 1, 'endIndex': end_index - 1}}})
 
             if body_content:
-                requests.append({
-                    'insertText': { 'location': { 'index': 1 }, 'text': body_content }
-                })
+                requests.append({'insertText': {'location': {'index': 1}, 'text': body_content}})
 
             if requests:
-                self.service.documents().batchUpdate(
-                    documentId=document_id, body={'requests': requests}
-                ).execute()
+                service.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
             
-            # Return the updated document object
-            return self.get_document(document_id)
+            return await self.get_document(user_id, document_id)
 
         except HttpError as error:
-            logger.error(f"An error occurred while updating the document: {error}")
+            logger.error(f"An error occurred while updating document {document_id} for user {user_id}: {error}")
             return None

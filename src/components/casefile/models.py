@@ -5,11 +5,10 @@ from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 from src.core.models.ontology import CasefileRole
-from src.components.toolsets.google_workspace.drive.models import DriveFile
-from src.components.toolsets.google_workspace.gmail.models import GmailMessage
-from src.components.toolsets.google_workspace.calendar.models import GoogleCalendarEvent
-from src.components.toolsets.google_workspace.docs.models import GoogleDoc
-from src.components.toolsets.google_workspace.sheets.models import GoogleSheet
+from src.core.models.google_workspace.drive import DriveFile # This one is correct
+from src.core.models.google_workspace.gmail import GmailMessage
+from src.core.models.google_workspace.calendar import GoogleCalendarEvent
+from src.core.models.google_workspace.people import GooglePerson
 
 
 class ProcessedArtifact(BaseModel):
@@ -22,6 +21,15 @@ class ProcessedArtifact(BaseModel):
     mime_type: str
     processed_at: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
     size_bytes: Optional[int] = None
+
+class RelatedObject(BaseModel):
+    """Represents a link to an external object with its core metadata."""
+    object_id: str = Field(description="The unique ID of the external object.")
+    object_type: str = Field(description="The type of the object (e.g., 'gmail', 'drive_file').")
+    display_name: Optional[str] = Field(None, description="A user-friendly name, like an email subject or file title.")
+    created_date: Optional[str] = Field(None, description="The creation date of the object in ISO format.")
+    # Je kunt hier later ook een embedding aan toevoegen
+    # embedding: Optional[List[float]] = None
 
 
 
@@ -56,6 +64,10 @@ class Casefile(BaseModel):
         default_factory=list, description="A list of IDs of associated ADK Session instances."
     )
 
+    related_objects: List[RelatedObject] = Field(
+        default_factory=list, description="A list of linked external objects with their metadata."
+    )
+
     processed_files: List[ProcessedArtifact] = Field(
         default_factory=list, description="A list of artifacts processed during ingestion and stored in GCS."
     )
@@ -69,8 +81,7 @@ class Casefile(BaseModel):
     drive_files: Optional[List[DriveFile]] = None
     gmail_messages: Optional[List[GmailMessage]] = None
     calendar_events: Optional[List[GoogleCalendarEvent]] = None
-    google_docs: Optional[List[GoogleDoc]] = None
-    google_sheets: Optional[List[GoogleSheet]] = None
+    google_people: Optional[List[GooglePerson]] = None
 
     embedding: Optional[List[float]] = None
 
@@ -92,6 +103,7 @@ class CasefileUpdate(BaseModel):
     description: Optional[str] = None
     casefile_type: Optional[str] = None
     tags: Optional[List[str]] = None
+    related_objects: Optional[List[RelatedObject]] = None
     processed_files: Optional[List[ProcessedArtifact]] = None
     drive_files_count: Optional[int] = None
     gmail_messages_count: Optional[int] = None
@@ -101,8 +113,7 @@ class CasefileUpdate(BaseModel):
     drive_files: Optional[List[DriveFile]] = None
     gmail_messages: Optional[List[GmailMessage]] = None
     calendar_events: Optional[List[GoogleCalendarEvent]] = None
-    google_docs: Optional[List[GoogleDoc]] = None
-    google_sheets: Optional[List[GoogleSheet]] = None
+    google_people: Optional[List[GooglePerson]] = None
 
 class UpdateCasefileRequest(BaseModel):
     updates: CasefileUpdate
