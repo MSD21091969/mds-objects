@@ -1,2 +1,0 @@
-2025-09-18 12:47:06,379 - root - INFO - Basic application logging configured.
-2025-09-18 12:47:06,432 - src.core.adk_monitoring.telemetry_setup - INFO - OpenTelemetry configured with Cloud Trace Exporter.
