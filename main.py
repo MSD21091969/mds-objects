@@ -5,16 +5,16 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 
-from src.core.security import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from src.core.models.user import Token
-from src.components.casefile.api import router as casefile_router
-from src.components.communication.api import router as chat_router # NIEUW
-from src.core.dependencies import get_database_manager
-from src.core.managers.database_manager import DatabaseManager
+from core.security import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from core.models.user import Token
+from src.casefileservice.v1_case import router as casefile_router
+from src.communicationservice.router import router as chat_router # NIEUW
+from core.dependencies import get_database_manager
+from core.managers.database_manager import DatabaseManager
 import os
 
-from src.core.logging_config import setup_logging # NEW
-from src.core.adk_monitoring.telemetry_setup import setup_opentelemetry # NEW
+from core.logging_config import setup_logging # NEW
+from core.adk_monitoring.telemetry_setup import setup_opentelemetry # NEW
 
 # Setup basic logging as early as possible
 setup_logging() # NEW
