@@ -1,0 +1,44 @@
+Prompt voor Code Assistent:
+
+Voer de volgende refactoring uit voor de google_calendar toolset, in lijn met de nieuwe authenticatie-architectuur.
+
+Instructies:
+
+Pas service.py aan:
+
+Bestand: src/components/toolsets/google_workspace/calendar/service.py
+
+Wijzigingen:
+
+Importeer de GoogleCredentialManager in plaats van de DatabaseManager.
+
+Pas de __init__ methode aan om een credential_manager: GoogleCredentialManager als argument te accepteren en deze toe te wijzen aan self.credential_manager. De db_manager is niet langer nodig in de constructor.
+
+Vervang in alle methoden de aanroep service = await self.get_service_for_user(user_id) door service = await self.get_service(user_id).
+
+Pas google_calendar_toolset.py aan:
+
+Bestand: src/components/toolsets/google_workspace/calendar/google_calendar_toolset.py
+
+Wijzigingen:
+
+Voeg de helper-methode _get_user_id_from_context toe om de user_id uit de tool_context te halen. Je kunt deze methode kopiëren uit andere, reeds gerefactorde toolsets zoals GooglePeopleToolset.
+
+Roep in elke tool-methode (zoals list_events, create_event, etc.) de _get_user_id_from_context aan het begin aan.
+
+Zorg ervoor dat de opgehaalde user_id wordt doorgegeven aan de corresponderende service-methode (bv., await self.calendar_service.list_events(user_id=user_id, ...)).
+
+Voeg duidelijke foutafhandeling toe voor het geval de user_id niet kan worden gevonden.
+
+Verifieer models.py:
+
+Bestand: src/components/toolsets/google_workspace/calendar/models.py
+
+Actie: Controleer of dit bestand enkel Pydantic-modellen (EventDateTime, EventAttendee, GoogleCalendarEvent) bevat en geen service- of toolset-logica. Er zijn waarschijnlijk geen wijzigingen nodig.
+
+
+
+
+
+
+

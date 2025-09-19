@@ -1,2 +1,15 @@
--r requirements.txt
-google_auth_oauthlib
+# High-level dependencies for the project
+
+# Core web framework
+fastapi
+uvicorn[standard]
+
+# Google Cloud & Workspace
+google-cloud-storage
+google-api-python-client
+google-auth-oauthlib
+
+# Utilities
+python-dotenv
+PyMuPDF
+python-docx

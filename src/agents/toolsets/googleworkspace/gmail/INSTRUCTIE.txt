@@ -1,0 +1,45 @@
+Programmeerpartner
+
+Denkproces tonen
+Oké, hier is de prompt voor de google_gmail bestanden.
+
+Prompt voor Code Assistent:
+
+Voer de volgende refactoring uit voor de google_gmail toolset om deze aan te passen aan de nieuwe, per-request authenticatiestructuur met de CredentialManager.
+
+Instructies:
+
+Pas service.py aan:
+
+Bestand: src/components/toolsets/google_workspace/gmail/service.py
+
+Wijzigingen:
+
+Importeer de GoogleCredentialManager in plaats van de DatabaseManager.
+
+Pas de __init__ methode aan. Deze moet nu een credential_manager: GoogleCredentialManager accepteren in plaats van client_secrets_path en token_path. Verwijder de oude super().__init__ aanroep en de _build_service aanroep. De nieuwe __init__ zou er zo uit moeten zien:
+
+Python
+
+def __init__(self, credential_manager: GoogleCredentialManager):
+    super().__init__(credential_manager)
+    self.service_name = SERVICE_NAME
+    self.service_version = SERVICE_VERSION
+    self.scopes = SCOPES
+Vervang in alle methoden de aanroep service = await self.get_service_for_user(user_id) door service = await self.get_service(user_id).
+
+Refactor google_gmail_toolset.py:
+
+Bestand: src/components/toolsets/google_workspace/gmail/google_gmail_toolset.py
+
+Wijzigingen:
+
+De _get_user_id_from_context helper-methode is al aanwezig en correct.
+
+Zorg ervoor dat de user_id die wordt verkregen uit de context, consequent wordt doorgegeven aan de service-laag in alle tool-methoden (bv., await self._gmail_service.search_emails(user_id=user_id, ...)).
+
+Controleer of de foutafhandeling voor een ontbrekende user_id robuust is.
+
+Verifieer models.py:
+
+Bestand: src/components/toolsets/google_workspace/gmail/models.py

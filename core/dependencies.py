@@ -1,0 +1,295 @@
+# src/core/dependencies.py
+
+import logging
+import os
+from functools import lru_cache
+
+# --- Core Managers & Utils ---
+from .managers.database_manager import DatabaseManager
+from .managers.cache_manager import CacheManager
+from .managers.prompt_manager import PromptManager
+from .managers.pubsub_manager import PubSubManager
+from .managers.embeddings_manager import EmbeddingsManager
+from .utils.document_parser import DocumentParser
+from .managers.firestore_session_service import FirestoreSessionService
+from .adk_monitoring.service import ADKMonitoringService
+
+# --- Component Services ---
+from src.casefileservice.service import CasefileService
+# from src.communicationservice.api_comm import CommunicationService
+# from src.components.toolsets.retrieval.service import RetrievalService
+# from src.components.toolsets.web_search.service import WebSearchService
+
+# from src.components.toolsets.google_workspace.drive.service import GoogleDriveService
+# from src.components.toolsets.google_workspace.gmail.service import GoogleGmailService
+# from src.components.toolsets.google_workspace.docs.service import GoogleDocsService
+# from src.components.toolsets.google_workspace.sheets.service import GoogleSheetsService
+# from src.components.toolsets.google_workspace.calendar.service import GoogleCalendarService
+# from src.components.toolsets.google_workspace.people.service import GooglePeopleService
+
+# --- Component Toolsets ---
+from src.agents.toolsets.casefile_toolset import CasefileToolset
+# from src.components.toolsets.retrieval.toolset import RetrievalToolset
+# from src.components.toolsets.web_search.web_search_toolset import WebSearchToolset
+# from src.components.toolsets.google_workspace.drive.google_drive_toolset import GoogleDriveToolset
+# from src.components.toolsets.google_workspace.gmail.google_gmail_toolset import GoogleGmailToolset
+# from src.components.toolsets.google_workspace.docs.google_docs_toolset import GoogleDocsToolset
+# from src.components.toolsets.google_workspace.sheets.google_sheets_toolset import GoogleSheetsToolset
+# from src.components.toolsets.google_workspace.calendar.google_calendar_toolset import GoogleCalendarToolset
+# from src.components.toolsets.google_workspace.people.google_people_toolset import GooglePeopleToolset
+
+# --- Agents ---
+from src.agents.chat_agent import ChatAgent
+# from src.components.agents.workspace_reporter_agent import WorkspaceReporterAgent
+
+# --- Plugins ---
+from .adk_monitoring.logging_plugin import LoggingPlugin
+from .adk_monitoring.opentelemetry_plugin import OpenTelemetryMonitoringPlugin
+# Import the new plugins from their correct location
+from .adk_monitoring.authorization_plugin import AuthorizationPlugin
+from .adk_monitoring.cost_tracking_plugin import CostTrackingPlugin
+from .adk_monitoring.dynamic_context_plugin import DynamicContextPlugin
+from .adk_monitoring.sanitization_plugin import SanitizationPlugin
+
+logger = logging.getLogger(__name__)
+
+# --- Manager Getters ---
+
+@lru_cache(maxsize=None)
+def get_database_manager() -> DatabaseManager:
+    logger.debug("Creating singleton instance of DatabaseManager")
+    return DatabaseManager()
+
+@lru_cache(maxsize=None)
+def get_cache_manager() -> CacheManager:
+    logger.debug("Creating singleton instance of CacheManager")
+    return CacheManager()
+
+@lru_cache(maxsize=None)
+def get_prompt_manager() -> PromptManager:
+    logger.debug("Creating singleton instance of PromptManager")
+    return PromptManager(db_manager=get_database_manager())
+
+@lru_cache(maxsize=None)
+def get_casefile_service() -> CasefileService:
+    logger.debug("Creating singleton instance of CasefileService")
+    return CasefileService(
+        db_manager=get_database_manager(),
+        cache_manager=get_cache_manager()
+    )
+
+@lru_cache(maxsize=None)
+def get_pubsub_manager() -> PubSubManager:
+    logger.debug("Creating singleton instance of PubSubManager")
+    return PubSubManager()
+
+@lru_cache(maxsize=None)
+def get_document_parser() -> DocumentParser:
+    logger.debug("Creating singleton instance of DocumentParser")
+    return DocumentParser()
+
+@lru_cache(maxsize=None)
+def get_embeddings_manager() -> EmbeddingsManager:
+    logger.debug("Creating singleton instance of EmbeddingsManager")
+    return EmbeddingsManager(db_manager=get_database_manager(), parser=get_document_parser())
+
+# --- Monitoring & Plugin Getters ---
+@lru_cache(maxsize=None)
+def get_adk_monitoring_service() -> ADKMonitoringService:
+    logger.debug("Creating singleton instance of ADKMonitoringService")
+    return ADKMonitoringService()
+
+@lru_cache(maxsize=None)
+def get_logging_plugin() -> LoggingPlugin:
+    logger.debug("Creating singleton instance of LoggingPlugin")
+    return LoggingPlugin(monitoring_service=get_adk_monitoring_service())
+
+@lru_cache(maxsize=None)
+def get_opentelemetry_monitoring_plugin() -> OpenTelemetryMonitoringPlugin:
+    logger.debug("Creating singleton instance of OpenTelemetryMonitoringPlugin")
+    return OpenTelemetryMonitoringPlugin(
+        monitoring_service=get_adk_monitoring_service(),
+        app_name="mds7-rebuild" # Ensure this matches the app_name in telemetry_setup
+    )
+
+@lru_cache(maxsize=None)
+def get_authorization_plugin() -> AuthorizationPlugin:
+    logger.debug("Creating singleton instance of AuthorizationPlugin")
+    return AuthorizationPlugin()
+
+@lru_cache(maxsize=None)
+def get_dynamic_context_plugin() -> DynamicContextPlugin:
+    logger.debug("Creating singleton instance of DynamicContextPlugin")
+    return DynamicContextPlugin()
+
+@lru_cache(maxsize=None)
+def get_cost_tracking_plugin() -> CostTrackingPlugin:
+    logger.debug("Creating singleton instance of CostTrackingPlugin")
+    return CostTrackingPlugin(monitoring_service=get_adk_monitoring_service())
+
+@lru_cache(maxsize=None)
+def get_sanitization_plugin() -> SanitizationPlugin:
+    logger.debug("Creating singleton instance of SanitizationPlugin")
+    return SanitizationPlugin(monitoring_service=get_adk_monitoring_service())
+
+# --- Service Getters ---
+
+@lru_cache(maxsize=None)
+def get_firestore_session_service() -> FirestoreSessionService:
+    logger.debug("Creating singleton instance of FirestoreSessionService")
+    return FirestoreSessionService(
+        db_manager=get_database_manager(),
+        monitoring_service=get_adk_monitoring_service()
+    )
+
+# @lru_cache(maxsize=None)
+# def get_retrieval_service() -> RetrievalService:
+#     logger.debug("Creating singleton instance of RetrievalService")
+#     return RetrievalService()
+
+# @lru_cache(maxsize=None)
+# def get_web_search_service() -> WebSearchService:
+#     logger.debug("Creating singleton instance of WebSearchService")
+#     return WebSearchService()
+
+# @lru_cache(maxsize=None)
+# def get_google_drive_service() -> GoogleDriveService:
+#     logger.debug("Creating singleton instance of GoogleDriveService")
+#     # De service heeft alleen de db_manager nodig voor user-centric auth.
+#     return GoogleDriveService(db_manager=get_database_manager())
+
+# @lru_cache(maxsize=None)
+# def get_google_gmail_service() -> GoogleGmailService:
+#     logger.debug("Creating singleton instance of GoogleGmailService")
+#     return GoogleGmailService(db_manager=get_database_manager())
+
+# @lru_cache(maxsize=None)
+# def get_google_sheets_service() -> GoogleSheetsService:
+#     logger.debug("Creating singleton instance of GoogleSheetsService")
+#     return GoogleSheetsService(db_manager=get_database_manager())
+
+# @lru_cache(maxsize=None)
+# def get_google_calendar_service() -> GoogleCalendarService:
+#     logger.debug("Creating singleton instance of GoogleCalendarService")
+#     # De constructor van GoogleCalendarService is al correct in de context,
+#     # maar we passen het hier aan voor consistentie met de andere services.
+#     return GoogleCalendarService(db_manager=get_database_manager())
+
+# @lru_cache(maxsize=None)
+# def get_google_people_service() -> GooglePeopleService:
+#     logger.debug("Creating singleton instance of GooglePeopleService")
+#     return GooglePeopleService(db_manager=get_database_manager())
+
+# @lru_cache(maxsize=None)
+# def get_google_docs_service() -> GoogleDocsService:
+#     logger.debug("Creating singleton instance of GoogleDocsService")
+#     return GoogleDocsService(db_manager=get_database_manager())
+
+
+# --- Toolset Getters ---
+
+@lru_cache(maxsize=None)
+def get_casefile_toolset() -> CasefileToolset:
+    logger.debug("Creating singleton instance of CasefileToolset")
+    return CasefileToolset(casefile_service=get_casefile_service())
+
+# @lru_cache(maxsize=None)
+# def get_retrieval_toolset() -> RetrievalToolset:
+#     logger.debug("Creating singleton instance of RetrievalToolset")
+#     return RetrievalToolset(retrieval_service=get_retrieval_service())
+
+# @lru_cache(maxsize=None)
+# def get_web_search_toolset() -> WebSearchToolset:
+#     logger.debug("Creating singleton instance of WebSearchToolset")
+#     return WebSearchToolset(web_search_service=get_web_search_service())
+
+# @lru_cache(maxsize=None)
+# def get_google_drive_toolset() -> GoogleDriveToolset:
+#     logger.debug("Creating singleton instance of GoogleDriveToolset")
+#     return GoogleDriveToolset(drive_service=get_google_drive_service())
+
+# @lru_cache(maxsize=None)
+# def get_gmail_toolset() -> GoogleGmailToolset:
+#     logger.debug("Creating singleton instance of GoogleGmailToolset")
+#     return GoogleGmailToolset(gmail_service=get_google_gmail_service())
+
+# @lru_cache(maxsize=None)
+# def get_google_sheets_toolset() -> GoogleSheetsToolset:
+#     logger.debug("Creating singleton instance of GoogleSheetsToolset")
+#     return GoogleSheetsToolset(sheets_service=get_google_sheets_service())
+
+# @lru_cache(maxsize=None)
+# def get_google_docs_toolset() -> GoogleDocsToolset:
+#     logger.debug("Creating singleton instance of GoogleDocsToolset")
+#     return GoogleDocsToolset(docs_service=get_google_docs_service())
+
+# @lru_cache(maxsize=None)
+# def get_google_calendar_toolset() -> GoogleCalendarToolset:
+#     logger.debug("Creating singleton instance of GoogleCalendarToolset")
+#     return GoogleCalendarToolset(calendar_service=get_google_calendar_service())
+
+# @lru_cache(maxsize=None)
+# def get_google_people_toolset() -> GooglePeopleToolset:
+#     logger.debug("Creating singleton instance of GooglePeopleToolset")
+#     return GooglePeopleToolset(people_service=get_google_people_service())
+
+# --- Agent Getters ---
+
+@lru_cache(maxsize=None)
+def get_chat_agent() -> ChatAgent:
+    logger.debug("Creating singleton instance of ChatAgent")
+    return ChatAgent(
+        name="ChatAgent",
+        model_name="gemini-1.5-flash", # Gebruik een modern, snel model
+        prompt_manager=get_prompt_manager(),
+        casefile_service=get_casefile_service(),
+        # Inject all available toolsets
+        tools=[
+            get_casefile_toolset(),
+            # get_retrieval_toolset(),
+            # get_web_search_toolset(),
+            # get_google_drive_toolset(),
+            # get_gmail_toolset(),
+            # get_google_calendar_toolset(),
+            # get_google_people_toolset(),
+            # get_google_docs_toolset(),
+            # get_google_sheets_toolset(),
+        ]
+    )
+
+# @lru_cache(maxsize=None)
+# def get_workspace_reporter_agent() -> WorkspaceReporterAgent:
+#     logger.debug("Creating singleton instance of WorkspaceReporterAgent")
+#     return WorkspaceReporterAgent(
+#         name="WorkspaceReporterAgent",
+#         # This agent performs a specific workflow, so it needs the relevant tools
+#         tools=[
+#             get_casefile_toolset(),
+#             # get_google_drive_toolset(),
+#             # get_gmail_toolset(),
+#             # get_google_calendar_toolset(),
+#         ]
+#     )
+
+# --- High-level Manager Getters ---
+
+from src.communicationservice.service import CommunicationService
+
+@lru_cache(maxsize=None)
+def get_communication_service() -> CommunicationService:
+    logger.debug("Creating singleton instance of CommunicationService")
+    # Maak de service aan
+    service = CommunicationService(
+        session_service=get_firestore_session_service(),
+        casefile_service=get_casefile_service(),
+        monitoring_service=get_adk_monitoring_service(),
+        logging_plugin=get_logging_plugin(),
+        opentelemetry_plugin=get_opentelemetry_monitoring_plugin(),
+        authorization_plugin=get_authorization_plugin(),
+        dynamic_context_plugin=get_dynamic_context_plugin(),
+        cost_tracking_plugin=get_cost_tracking_plugin(),
+        sanitization_plugin=get_sanitization_plugin(),
+    )
+    # Injecteer de agent om een circulaire dependency te voorkomen
+    service.set_chat_agent(get_chat_agent())
+    return service

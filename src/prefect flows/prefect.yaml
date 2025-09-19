@@ -1,0 +1,36 @@
+# build: null # No build step needed when using a pre-built image
+# push: null # No push step needed
+# pull: null # No pull step needed, dependencies are in the image
+
+deployments:
+- name: "Google Workspace Daily Sync"
+  entrypoint: MDSAPP/prefect_flows/workspace_activity_report_flow.py:workspace_activity_report_flow
+  work_pool:
+    name: "cloud-run-pool"
+    work_queue_name: "default"
+    job_variables:
+      # The image for the Cloud Run Job that will run the flow
+      image: "europe-west4-docker.pkg.dev/mailmind-ai-djbuw/prefect-repo/mds-worker:latest"
+      # Reference to a Prefect Block of type "GCP Credentials"
+      gcp_credentials: "{{ gcp_credentials.mds-poc-gcp-creds }}"
+      # Optional: Define the resources for the Cloud Run Job
+      cpu: "1000m"
+      memory: "512Mi"
+      # Optional: Set a timeout for the job in seconds
+      timeout: 1800 # 30 minutes
+
+- name: "Google Workspace Manual Sync"
+  entrypoint: MDSAPP/prefect_flows/workspace_activity_report_manual_flow.py:workspace_activity_report_manual_flow
+  work_pool:
+    name: "cloud-run-pool"
+    work_queue_name: "default"
+    job_variables:
+      # The image for the Cloud Run Job that will run the flow
+      image: "europe-west4-docker.pkg.dev/mailmind-ai-djbuw/prefect-repo/mds-worker:latest"
+      # Reference to a Prefect Block of type "GCP Credentials"
+      gcp_credentials: "{{ gcp_credentials.mds-poc-gcp-creds }}"
+      # Optional: Define the resources for the Cloud Run Job
+      cpu: "1000m"
+      memory: "512Mi"
+      # Optional: Set a timeout for the job in seconds
+      timeout: 1800 # 30 minutes

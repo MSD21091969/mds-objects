@@ -1,0 +1,38 @@
+Voer de volgende refactoring uit voor de google_docs toolset. Het doel is om de toolset te moderniseren naar de per-request authenticatiestructuur en deze consistent te maken met de andere google_workspace toolsets.
+
+Instructies:
+
+Pas service.py aan:
+
+Bestand: src/components/toolsets/google_workspace/docs/service.py
+
+Wijzigingen:
+
+Importeer de GoogleCredentialManager in plaats van de DatabaseManager.
+
+Pas de __init__ methode aan om een credential_manager: GoogleCredentialManager te accepteren in plaats van een db_manager.
+
+Vervang in alle methoden de aanroep service = await self.get_service_for_user(user_id) door service = await self.get_service(user_id).
+
+Refactor google_docs_toolset.py:
+
+Bestand: src/components/toolsets/google_workspace/docs/google_docs_toolset.py
+
+Wijzigingen:
+
+Maak de tool-methoden publiek en asynchroon: Hernoem _create_document naar create_document en _get_document_content naar get_document_content. Maak ze async.
+
+Voeg tool_context toe: Voeg tool_context: ToolContext als parameter toe aan de create_document en get_document_content methoden.
+
+Implementeer user-authenticatie per request:
+
+Voeg de _get_user_id_from_context helper-methode toe.
+
+Roep in create_document en get_document_content deze helper aan om de user_id te verkrijgen.
+
+Geef de user_id door aan de corresponderende service-aanroepen (bv. await self.docs_service.create_document(user_id=user_id, ...)).
+
+Vereenvoudig get_tools: Verwijder de handmatige FunctionDeclaration en google_doc_schema objecten. Pas de methode aan zodat deze direct de method-references teruggeeft, zoals in andere toolsets:
+
+Python
+

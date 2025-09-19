@@ -1,0 +1,67 @@
+rogrammeerpartner
+Samenvatting Huidige Werkzaamheden
+Architectuur Standaardisatie: We hebben een consistente Model-Service-Toolset architectuur geïmplementeerd voor alle google_workspace componenten.
+
+Details: Logica is opgesplitst in Pydantic models.py voor data-contracten, service.py voor ontkoppelde businesslogica, en een toolset.py als bridge naar de ADK LlmAgent.
+
+Authenticatie Refactoring: De Google-authenticatie is gecentraliseerd.
+
+Details: Een CredentialManager handelt nu de validatie en refresh-logica af, los van een CredentialStore die de tokens ophaalt. Dit verbetert de testbaarheid en flexibiliteit.
+
+Per-Request Context: We hebben de services aangepast om user_id per-request te ontvangen via de ToolContext.
+
+Details: Dit zorgt ervoor dat elke tool-aanroep correct wordt geauthenticeerd voor de actieve gebruiker in de chat, wat essentieel is voor een veilige multi-user omgeving.
+
+Agent Integratie: De ChatAgent is aangepast om alle nieuwe, modulaire toolsets via dependency injection te ontvangen, met behoud van de dynamische _provide_instruction methode.
+
+Volgende Stappen
+Integratie ontology.py (Plan Punt 2):
+
+Details: Verplaats het ontology.py bestand naar /src/core/models/. Refactor de inhoud naar Pydantic BaseModel klassen om de ontologie te integreren met de bestaande datamodellen en type-validatie in de applicatie.
+
+Prompt Management Refactoring (Plan Punt 3):
+
+Details: Analyseer de PromptManager en de firestore_template uit /docs. Implementeer een FirestorePromptProvider die templates uit Firestore laadt en rendert, en injecteer deze in de PromptManager. Dit maakt de prompt-strategie dynamisch en beheerbaar buiten de code.
+
+Herstel authorize_google_services.py (Plan Punt 4):
+
+Details: Analyseer het script en pas de logica aan om de nieuwe CredentialManager en DatabaseCredentialStore te gebruiken. Het script moet de OAuth-flow doorlopen en het resulterende token direct wegschrijven via de credential_store.update_user_token methode.
+#########################
+
+
+
+##### 4. The rest of the /docs files we'll comne back to later. One I would like to emphasize, autorize_google_services.py, it belongs in /scripts and i use it before app start 
+to get my token for google toolsets, but it doesnt completely workl (in new code, old version no problem)
+
+##### 5. I re-wrote this new code b/c it is cleaner than "old" one, it uses a dependency hub, sophistcated adk_monitoring plugins in separate folder,
+It will be connected to pubsub (adk plugin streaming, but also other topic/subscriptions, for instance Prefect flow data) and google cloud logging/tracing, GCS storage.
+Also Bigquery for searching of collected data. So thats the direction we're headed.
+
+I made an empty folder for:
+/core/adk_callback_patters
+Possibly latyer also folders for other specific adk code envolving state/context/artifacts etc
+
+And a folder wit the old prefect flow.py files:
+/components/prefect_flows
+
+##### 6.
+I want to deploy the fastapi app on cloud run. Would i need to do some preps, for instance my credentials
+and auth in a secret manager ? And my own JWT login, how bout that when in cloud. See .json files and env. file.  
+I thought about also extending the app (pubusb, bigquery,etc) and moved to codepace for this reason to (besided the re-writing of old application),
+got some advice on how to finalize my original intention with old app to build a small datapipeline and analysis
+architecture with a prefect server/worker on cloud run that retrieves/syncs data from for ex. my google workspace, extracts all metadata, saves files, bodies, attachemtents 
+to temporary buckets (later analysis), links it all to a new casefile (firestore is single source of truth) and reports on pubsub too. Looking for a cool solution, please give me three options.
+
+
+### 7. Finally: Lets fix the code, make sure we get the "old" functionalities back (smooth chatroom, agent with lots of tools, good conversation skills)  
+
+
+We moeten een manier vnden om het resulaat van tools dia als objecten aan agent worden doorgegeven zoals bij casefiles lst ALLEMAAL worden geaccepteerd in tooldeclarion:
+script om te converteren alle modellen naar lijsten ofzo. 
+
+
+datamodellen voor toolsets: ieder "benodigd"model (niet req of update uit api) kan in een tool betrokken zijn waarbij de betreffende data aan de llm moet worden gegeven. deze modellen moeten ieder stuk voor stuk per tool in de toolsets worden geseriailiesserd
+indien nodig:
+
+nog te doen user.py en ontology.py
+denk ook aan beschrijving in de tool en input output en toolcontext (communicatie??)

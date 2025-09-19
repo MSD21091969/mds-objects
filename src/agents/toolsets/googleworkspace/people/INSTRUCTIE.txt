@@ -1,0 +1,36 @@
+Prompt voor Code Assistent:
+
+Voer de volgende refactoring uit voor de google_people toolset om deze aan te passen aan de nieuwe authenticatie-architectuur die gebruikmaakt van de CredentialManager.
+
+Instructies:
+
+Pas service.py aan:
+
+Bestand: src/components/toolsets/google_workspace/people/service.py
+
+Wijzigingen:
+
+Importeer de GoogleCredentialManager in plaats van de DatabaseManager.
+
+Pas de __init__ methode aan. Deze moet nu een credential_manager: GoogleCredentialManager accepteren. De db_manager is niet langer nodig. De nieuwe constructor moet er als volgt uitzien:
+
+Python
+
+def __init__(self, credential_manager: GoogleCredentialManager):
+    super().__init__(credential_manager)
+    self.service_name = SERVICE_NAME
+    self.service_version = SERVICE_VERSION
+    self.scopes = SCOPES
+Vervang in alle methoden de aanroep service = await self.get_service_for_user(user_id) door service = await self.get_service(user_id).
+
+Verifieer google_people_toolset.py:
+
+Bestand: src/components/toolsets/google_workspace/people/google_people_toolset.py
+
+Actie: Controleer of dit bestand al de correcte structuur heeft. De _get_user_id_from_context helper-methode zou al aanwezig en correct moeten zijn. Verifieer dat de user_id die uit de context wordt gehaald, correct wordt doorgegeven aan elke service-aanroep (bv. await self._people_service.list_contacts(user_id=user_id, ...)). Er zijn hier waarschijnlijk geen grote wijzigingen nodig.
+
+Verifieer models.py:
+
+Bestand: src/components/toolsets/google_workspace/people/models.py
+
+Actie: Controleer of dit bestand enkel Pydantic-modellen bevat. Er zijn hier geen aanpassingen nodig.

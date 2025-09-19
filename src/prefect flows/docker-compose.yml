@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    image: mds7-app
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      - PREFECT_API_URL=http://prefect-server:4200/api
+    depends_on:
+      - redis
+    volumes:
+      - ${GOOGLE_APPLICATION_CREDENTIALS_HOST_PATH:-./google-credentials.json}:/app/credentials.json
+
+  prefect-server:
+    build:
+      context: .
+      dockerfile: prefect.server.Dockerfile
+    image: mds7-prefect-server
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_API_DATABASE_CONNECTION_URL=sqlite+aiosqlite:///app/prefect.db
+    volumes:
+      - prefect_db:/app
+
+  prefect-worker:
+    build:
+      context: .
+      dockerfile: prefect.worker.Dockerfile
+    image: mds7-worker
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+    depends_on:
+      - prefect-server
+      - api
+    volumes:
+      - ${GOOGLE_APPLICATION_CREDENTIALS_HOST_PATH:-./google-credentials.json}:/app/credentials.json
+
+volumes:
+  redis_data:
+  prefect_db:
