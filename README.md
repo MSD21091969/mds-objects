@@ -2,8 +2,7 @@
 
   1. Introduction
 
-  MDSAPP is the core application logic for the Modular Data System 7 (MDS7), an AI-powered platform for advanced data analysis and workflow automation.
-  It is built as a monolithic but modular Python application served by a FastAPI web server.
+  AI-powered platform for data analysis t is built as a monolithic but modular Python application served by a FastAPI web server.
 
   The system's primary purpose is to provide a secure, multi-user environment where AI agents, powered by Google's Gemini models, can interact with
   data, perform complex tasks, and automate workflows. The architecture is centered around the concept of Casefiles, which act as collaborative,
